@@ -13,6 +13,7 @@ interface Video {
 }
 
 const Index = () => {
+  const [youtubeApiKey, setYoutubeApiKey] = useState("");
   const [youtubeChannelId, setYoutubeChannelId] = useState("");
   const [videos, setVideos] = useState<Video[]>([]);
   const [filteredVideos, setFilteredVideos] = useState<Video[]>([]);
@@ -153,6 +154,18 @@ const Index = () => {
                   </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="apiKey">API Key do YouTube</Label>
+                    <Input
+                      id="apiKey"
+                      placeholder="Digite sua API key do YouTube"
+                      value={youtubeApiKey}
+                      onChange={(e) => setYoutubeApiKey(e.target.value)}
+                      className="bg-input border-border"
+                      type="password"
+                    />
+                  </div>
+                  
                   <div className="space-y-2">
                     <Label htmlFor="channelId">ID do Canal</Label>
                     <div className="flex gap-2">
