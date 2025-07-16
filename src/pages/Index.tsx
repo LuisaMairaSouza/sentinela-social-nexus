@@ -190,7 +190,7 @@ const Index = () => {
                       />
                       <Button 
                         onClick={handleYoutubeSearch} 
-                        disabled={isLoading}
+                        disabled={isLoading || !youtubeApiKey.trim() || !youtubeChannelId.trim()}
                         className="bg-primary hover:bg-primary/90"
                       >
                         {isLoading ? (
