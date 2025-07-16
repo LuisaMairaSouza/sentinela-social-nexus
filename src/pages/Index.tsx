@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Youtube, BarChart3, Twitter, Search, Loader2 } from "lucide-react";
+import { Youtube, BarChart3, Twitter, Search, Loader2, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -82,144 +82,192 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6">
-      {/* Título Principal */}
-      <div className="mb-16">
-        <h1 className="text-6xl md:text-8xl font-bold text-center neon-text mb-4">
-          SENTINELA
-        </h1>
-        <div className="w-32 h-1 bg-primary mx-auto glow"></div>
-      </div>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b border-border bg-card">
+        <div className="container mx-auto px-6 py-8">
+          <h1 className="text-5xl md:text-6xl text-center detective-title mb-2">
+            SENTINELA
+          </h1>
+          <p className="text-center text-muted-foreground text-lg">
+            Sistema de Investigação Digital
+          </p>
+        </div>
+      </header>
 
-      {/* Ícones das Redes Sociais */}
-      <div className="flex gap-8 mb-12">
-        {/* YouTube */}
-        <Dialog open={isYoutubeModalOpen} onOpenChange={setIsYoutubeModalOpen}>
-          <DialogTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-16 w-16 cyber-border hover:glow transition-all duration-300"
-            >
-              <Youtube className="h-8 w-8 text-red-500" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-4xl cyber-border">
-            <DialogHeader>
-              <DialogTitle className="text-xl neon-text">YouTube</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="channelId">ID do Canal</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="channelId"
-                    placeholder="Digite o ID do canal"
-                    value={youtubeChannelId}
-                    onChange={(e) => setYoutubeChannelId(e.target.value)}
-                    className="cyber-border"
-                  />
-                  <Button 
-                    onClick={handleYoutubeSearch} 
-                    disabled={isLoading}
-                    className="glow"
-                  >
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      "Buscar"
-                    )}
-                  </Button>
+      {/* Main Content */}
+      <main className="container mx-auto px-6 py-12">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl font-semibold mb-4">Ferramentas de Análise</h2>
+            <p className="text-muted-foreground">
+              Acesse as ferramentas disponíveis para investigação em redes sociais
+            </p>
+          </div>
+
+          {/* Cards das Ferramentas */}
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* YouTube Card */}
+            <Dialog open={isYoutubeModalOpen} onOpenChange={setIsYoutubeModalOpen}>
+              <DialogTrigger asChild>
+                <div className="card-modern rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-200">
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    <div className="p-4 bg-red-500/10 rounded-full">
+                      <Youtube className="h-8 w-8 text-red-500" />
+                    </div>
+                    <h3 className="text-xl font-semibold">YouTube</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Buscar e analisar vídeos de canais
+                    </p>
+                  </div>
                 </div>
-              </div>
-
-              {videos.length > 0 && (
-                <>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-5xl card-modern">
+                <DialogHeader>
+                  <DialogTitle className="text-xl flex items-center gap-2">
+                    <Youtube className="h-5 w-5 text-red-500" />
+                    Análise de Canal YouTube
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="videoSearch">Pesquisar vídeos</Label>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Label htmlFor="channelId">ID do Canal</Label>
+                    <div className="flex gap-2">
                       <Input
-                        id="videoSearch"
-                        placeholder="Pesquisar por título..."
-                        value={searchTerm}
-                        onChange={(e) => handleVideoSearch(e.target.value)}
-                        className="pl-10 cyber-border"
+                        id="channelId"
+                        placeholder="Digite o ID do canal"
+                        value={youtubeChannelId}
+                        onChange={(e) => setYoutubeChannelId(e.target.value)}
+                        className="bg-input border-border"
                       />
+                      <Button 
+                        onClick={handleYoutubeSearch} 
+                        disabled={isLoading}
+                        className="bg-primary hover:bg-primary/90"
+                      >
+                        {isLoading ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          "Buscar"
+                        )}
+                      </Button>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label>Vídeos encontrados ({filteredVideos.length})</Label>
-                    <ScrollArea className="h-64 w-full cyber-border rounded-md p-4">
-                      <div className="flex gap-4 overflow-x-auto pb-4">
-                        {filteredVideos.map((video, index) => (
-                          <div
-                            key={index}
-                            className="min-w-64 p-3 cyber-border rounded-lg hover:glow transition-all duration-300"
-                          >
-                            <p className="text-sm font-medium line-clamp-3">
-                              {video.title}
-                            </p>
-                          </div>
-                        ))}
+                  {videos.length > 0 && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="videoSearch">Filtrar vídeos</Label>
+                        <div className="relative">
+                          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            id="videoSearch"
+                            placeholder="Pesquisar por título..."
+                            value={searchTerm}
+                            onChange={(e) => handleVideoSearch(e.target.value)}
+                            className="pl-10 bg-input border-border"
+                          />
+                        </div>
                       </div>
-                    </ScrollArea>
+
+                      <div className="space-y-2">
+                        <Label>Vídeos encontrados ({filteredVideos.length})</Label>
+                        <ScrollArea className="h-80 w-full border border-border rounded-md bg-card">
+                          <div className="p-4">
+                            <div className="grid gap-3">
+                              {filteredVideos.map((video, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-start gap-3 p-3 border border-border rounded-lg hover:bg-accent/50 transition-colors"
+                                >
+                                  <Play className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium leading-relaxed break-words">
+                                      {video.title}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </ScrollArea>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Analytics Card */}
+            <Dialog open={isAnalyticsModalOpen} onOpenChange={setIsAnalyticsModalOpen}>
+              <DialogTrigger asChild>
+                <div className="card-modern rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-200">
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    <div className="p-4 bg-blue-500/10 rounded-full">
+                      <BarChart3 className="h-8 w-8 text-blue-500" />
+                    </div>
+                    <h3 className="text-xl font-semibold">Analytics</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Análise estatística de dados
+                    </p>
                   </div>
-                </>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
+                </div>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-2xl card-modern">
+                <DialogHeader>
+                  <DialogTitle className="text-xl flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5 text-blue-500" />
+                    YouTube Analytics
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="p-8 text-center">
+                  <div className="space-y-4">
+                    <BarChart3 className="h-16 w-16 text-muted-foreground mx-auto" />
+                    <h3 className="text-lg font-semibold">Em Desenvolvimento</h3>
+                    <p className="text-muted-foreground">
+                      Esta funcionalidade está sendo desenvolvida e estará disponível em breve.
+                    </p>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
 
-        {/* YouTube Analytics */}
-        <Dialog open={isAnalyticsModalOpen} onOpenChange={setIsAnalyticsModalOpen}>
-          <DialogTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-16 w-16 cyber-border hover:glow transition-all duration-300"
-            >
-              <BarChart3 className="h-8 w-8 text-primary" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-2xl cyber-border">
-            <DialogHeader>
-              <DialogTitle className="text-xl neon-text">YouTube Analytics</DialogTitle>
-            </DialogHeader>
-            <div className="p-8 text-center text-muted-foreground">
-              <p>Funcionalidade em desenvolvimento...</p>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* X (Twitter) */}
-        <Dialog open={isTwitterModalOpen} onOpenChange={setIsTwitterModalOpen}>
-          <DialogTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-16 w-16 cyber-border hover:glow transition-all duration-300"
-            >
-              <Twitter className="h-8 w-8 text-blue-400" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-2xl cyber-border">
-            <DialogHeader>
-              <DialogTitle className="text-xl neon-text">X (Twitter)</DialogTitle>
-            </DialogHeader>
-            <div className="p-8 text-center text-muted-foreground">
-              <p>Funcionalidade em desenvolvimento...</p>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Elementos decorativos */}
-      <div className="absolute top-20 left-20 w-2 h-2 bg-primary rounded-full glow animate-pulse"></div>
-      <div className="absolute bottom-20 right-20 w-3 h-3 bg-accent rounded-full glow animate-pulse delay-1000"></div>
-      <div className="absolute top-1/2 left-10 w-1 h-16 bg-gradient-to-b from-primary to-transparent"></div>
-      <div className="absolute top-1/2 right-10 w-1 h-16 bg-gradient-to-b from-accent to-transparent"></div>
+            {/* Twitter/X Card */}
+            <Dialog open={isTwitterModalOpen} onOpenChange={setIsTwitterModalOpen}>
+              <DialogTrigger asChild>
+                <div className="card-modern rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-200">
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    <div className="p-4 bg-gray-500/10 rounded-full">
+                      <Twitter className="h-8 w-8 text-gray-400" />
+                    </div>
+                    <h3 className="text-xl font-semibold">X (Twitter)</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Análise de posts e perfis
+                    </p>
+                  </div>
+                </div>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-2xl card-modern">
+                <DialogHeader>
+                  <DialogTitle className="text-xl flex items-center gap-2">
+                    <Twitter className="h-5 w-5 text-gray-400" />
+                    Análise X (Twitter)
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="p-8 text-center">
+                  <div className="space-y-4">
+                    <Twitter className="h-16 w-16 text-muted-foreground mx-auto" />
+                    <h3 className="text-lg font-semibold">Em Desenvolvimento</h3>
+                    <p className="text-muted-foreground">
+                      Esta funcionalidade está sendo desenvolvida e estará disponível em breve.
+                    </p>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+      </main>
     </div>
   );
 };
