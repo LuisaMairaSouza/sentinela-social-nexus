@@ -35,20 +35,42 @@ const Index = () => {
 
     setIsLoading(true);
     try {
+      console.log("Enviando requisição para API com ID:", youtubeChannelId);
+      
       const response = await fetch("https://api.teste.onlinecenter.com.br/webhook/buscar-videos-instagram", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Accept": "application/json",
         },
-        body: JSON.stringify({ id: youtubeChannelId }),
+        body: JSON.stringify({ id: youtubeChannelId.trim() }),
       });
 
+      console.log("Response status:", response.status);
+      console.log("Response headers:", response.headers);
+
       if (!response.ok) {
-        throw new Error("Erro na requisição");
+        const errorText = await response.text();
+        console.error("Erro na resposta:", errorText);
+        throw new Error(`Erro ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
-      const videoList = Array.isArray(data) ? data : data.videos || [];
+      console.log("Dados recebidos:", data);
+      
+      // Tentar diferentes estruturas possíveis do retorno
+      let videoList = [];
+      if (Array.isArray(data)) {
+        videoList = data;
+      } else if (data.videos && Array.isArray(data.videos)) {
+        videoList = data.videos;
+      } else if (data.data && Array.isArray(data.data)) {
+        videoList = data.data;
+      } else if (data.items && Array.isArray(data.items)) {
+        videoList = data.items;
+      }
+
+      console.log("Lista de vídeos processada:", videoList);
       
       setVideos(videoList);
       setFilteredVideos(videoList);
@@ -59,9 +81,10 @@ const Index = () => {
         description: `${videoList.length} vídeos encontrados!`,
       });
     } catch (error) {
+      console.error("Erro detalhado:", error);
       toast({
         title: "Erro",
-        description: "Falha ao buscar vídeos. Tente novamente.",
+        description: error instanceof Error ? error.message : "Falha ao buscar vídeos. Verifique o ID do canal e tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -172,19 +195,21 @@ const Index = () => {
 
                       <div className="space-y-2">
                         <Label>Vídeos encontrados ({filteredVideos.length})</Label>
-                        <ScrollArea className="h-80 w-full border border-border rounded-md bg-card">
+                        <ScrollArea className="h-40 w-full border border-border rounded-md bg-card">
                           <div className="p-4">
-                            <div className="grid gap-3">
+                            <div className="flex gap-4 overflow-x-auto pb-4">
                               {filteredVideos.map((video, index) => (
                                 <div
                                   key={index}
-                                  className="flex items-start gap-3 p-3 border border-border rounded-lg hover:bg-accent/50 transition-colors"
+                                  className="min-w-80 flex-shrink-0 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors bg-card"
                                 >
-                                  <Play className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium leading-relaxed break-words">
-                                      {video.title}
-                                    </p>
+                                  <div className="flex items-start gap-3">
+                                    <Play className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium leading-relaxed break-words line-clamp-3">
+                                        {video.title}
+                                      </p>
+                                    </div>
                                   </div>
                                 </div>
                               ))}
