@@ -25,6 +25,15 @@ const Index = () => {
   const { toast } = useToast();
 
   const handleYoutubeSearch = async () => {
+    if (!youtubeApiKey.trim()) {
+      toast({
+        title: "Erro",
+        description: "Por favor, insira uma API key válida.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!youtubeChannelId.trim()) {
       toast({
         title: "Erro",
@@ -36,7 +45,7 @@ const Index = () => {
 
     setIsLoading(true);
     try {
-      console.log("Enviando requisição para API com ID:", youtubeChannelId);
+      console.log("Enviando requisição para API com ID:", youtubeChannelId, "e API Key:", youtubeApiKey);
       
       const response = await fetch("https://api.teste.onlinecenter.com.br/webhook/buscar-videos-instagram", {
         method: "POST",
@@ -44,7 +53,10 @@ const Index = () => {
           "Content-Type": "application/json",
           "Accept": "application/json",
         },
-        body: JSON.stringify({ id: youtubeChannelId.trim() }),
+        body: JSON.stringify({ 
+          id: youtubeChannelId.trim(),
+          apikey: youtubeApiKey.trim()
+        }),
       });
 
       console.log("Response status:", response.status);
