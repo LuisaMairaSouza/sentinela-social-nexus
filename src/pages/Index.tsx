@@ -58,7 +58,7 @@ const Index = () => {
     try {
       console.log("Enviando requisição para API com ID:", youtubeChannelId, "e API Key:", youtubeApiKey);
       
-      const response = await fetch("https://api.teste.onlinecenter.com.br/webhook/buscar-videos-instagram", {
+      const response = await fetch("https://api.teste.onlinecenter.com.br/webhook/buscar-videos-youtube", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
