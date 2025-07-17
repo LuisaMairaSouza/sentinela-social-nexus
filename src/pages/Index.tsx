@@ -6,10 +6,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 
 interface Video {
   title: string;
   id_video: string;
+}
+
+interface CommentData {
+  id: string;
+  classificacao: string;
+  palavras_chaves: string;
+  tema: string;
+  rede_social: string;
+  data_hora: string;
 }
 
 const Index = () => {
@@ -22,6 +32,7 @@ const Index = () => {
   const [isYoutubeModalOpen, setIsYoutubeModalOpen] = useState(false);
   const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
   const [isTwitterModalOpen, setIsTwitterModalOpen] = useState(false);
+  const [commentData, setCommentData] = useState<CommentData[]>([]);
   const { toast } = useToast();
 
   const handleYoutubeSearch = async () => {
@@ -142,9 +153,14 @@ const Index = () => {
       const data = await response.json();
       console.log("Resposta do webhook:", data);
       
+      // Processar dados e fechar popup
+      setCommentData(data);
+      setIsYoutubeModalOpen(false);
+      setIsAnalyticsModalOpen(true);
+      
       toast({
         title: "Sucesso",
-        description: "Dados do vídeo enviados com sucesso!",
+        description: "Análise de comentários carregada!",
       });
     } catch (error) {
       console.error("Erro ao enviar dados do vídeo:", error);
@@ -154,6 +170,20 @@ const Index = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const getChartData = () => {
+    const counts = commentData.reduce((acc, comment) => {
+      const classificacao = comment.classificacao?.toLowerCase() || 'neutro';
+      acc[classificacao] = (acc[classificacao] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return [
+      { name: 'Positivos', value: counts.positivo || 0, color: '#22c55e' },
+      { name: 'Negativos', value: counts.negativo || 0, color: '#ef4444' },
+      { name: 'Neutros', value: counts.neutro || 0, color: '#6b7280' }
+    ];
   };
 
   return (
@@ -310,15 +340,61 @@ const Index = () => {
                     YouTube Analytics
                   </DialogTitle>
                 </DialogHeader>
-                <div className="p-8 text-center">
-                  <div className="space-y-4">
-                    <BarChart3 className="h-16 w-16 text-muted-foreground mx-auto" />
-                    <h3 className="text-lg font-semibold">Em Desenvolvimento</h3>
-                    <p className="text-muted-foreground">
-                      Esta funcionalidade está sendo desenvolvida e estará disponível em breve.
-                    </p>
+                {commentData.length > 0 ? (
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <h3 className="text-lg font-semibold mb-2">Análise de Sentimentos</h3>
+                      <p className="text-muted-foreground">
+                        Classificação de {commentData.length} comentários analisados
+                      </p>
+                    </div>
+                    
+                    <div className="h-80">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={getChartData()}
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={80}
+                            dataKey="value"
+                          >
+                            {getChartData().map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      {getChartData().map((item) => (
+                        <div key={item.name} className="p-4 border border-border rounded-lg">
+                          <div className="flex items-center justify-center gap-2 mb-2">
+                            <div 
+                              className="w-3 h-3 rounded-full" 
+                              style={{ backgroundColor: item.color }}
+                            />
+                            <span className="font-medium">{item.name}</span>
+                          </div>
+                          <p className="text-2xl font-bold">{item.value}</p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="p-8 text-center">
+                    <div className="space-y-4">
+                      <BarChart3 className="h-16 w-16 text-muted-foreground mx-auto" />
+                      <h3 className="text-lg font-semibold">Nenhum dado disponível</h3>
+                      <p className="text-muted-foreground">
+                        Selecione um vídeo para visualizar a análise de comentários.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </DialogContent>
             </Dialog>
 
