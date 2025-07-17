@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface Video {
   title: string;
-  id: string;
+  id_video: string;
 }
 
 const Index = () => {
@@ -119,7 +119,7 @@ const Index = () => {
 
   const handleVideoClick = async (video: Video) => {
     try {
-      console.log("Enviando dados do vídeo:", video.id, "com API Key:", youtubeApiKey);
+      console.log("Enviando dados do vídeo:", video.id_video, "com API Key:", youtubeApiKey);
       
       const response = await fetch("https://api.teste.onlinecenter.com.br/webhook/buscar-youtube", {
         method: "POST",
@@ -129,7 +129,7 @@ const Index = () => {
         },
         body: JSON.stringify({
           apiKey: youtubeApiKey.trim(),
-          id_video: video.id
+          id_video: video.id_video
         }),
       });
 
