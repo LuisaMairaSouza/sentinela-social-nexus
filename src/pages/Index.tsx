@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface Video {
   title: string;
-  id: string;
+  id_video: string;
 }
 
 const Index = () => {
@@ -114,6 +114,41 @@ const Index = () => {
         video.title.toLowerCase().includes(term.toLowerCase())
       );
       setFilteredVideos(filtered);
+    }
+  };
+
+  const handleVideoClick = async (videoId: string) => {
+    try {
+      const response = await fetch("https://api.teste.onlinecenter.com.br/webhook/buscar-videos-instagram", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({
+          apiKey: youtubeApiKey,
+          id_video: videoId
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log("Dados do vídeo:", data);
+      
+      toast({
+        title: "Sucesso",
+        description: "Dados do vídeo carregados!",
+      });
+    } catch (error) {
+      console.error("Erro ao buscar dados do vídeo:", error);
+      toast({
+        title: "Erro",
+        description: "Falha ao carregar dados do vídeo.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -226,7 +261,8 @@ const Index = () => {
                               {filteredVideos.map((video, index) => (
                                 <div
                                   key={index}
-                                  className="min-w-80 flex-shrink-0 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors bg-card"
+                                  className="min-w-80 flex-shrink-0 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors bg-card cursor-pointer"
+                                  onClick={() => handleVideoClick(video.id_video)}
                                 >
                                   <div className="flex items-start gap-3">
                                     <Play className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
