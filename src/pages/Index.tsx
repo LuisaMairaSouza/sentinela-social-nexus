@@ -40,6 +40,7 @@ const Index = () => {
   const [isYoutubeModalOpen, setIsYoutubeModalOpen] = useState(false);
   const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
   const [isTwitterModalOpen, setIsTwitterModalOpen] = useState(false);
+  const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
   const [commentData, setCommentData] = useState<CommentData[]>([]);
   const [sentimentData, setSentimentData] = useState<SentimentData[]>([]);
   const [selectedVideoTitle, setSelectedVideoTitle] = useState("");
@@ -189,12 +190,12 @@ const Index = () => {
       console.log("Comentários processados:", commentData);
       console.log("Sugestões processadas:", sentimentData);
       
-      // Processar dados e fechar popup
+      // Processar dados, marcar plataforma e mostrar embaixo
       setCommentData(commentData);
       setSentimentData(sentimentData);
       setSelectedVideoTitle(video.title);
+      setSelectedPlatform("youtube");
       setIsYoutubeModalOpen(false);
-      setIsAnalyticsModalOpen(true);
       
       toast({
         title: "Sucesso",
@@ -262,13 +263,17 @@ const Index = () => {
           </div>
 
           {/* Cards das Ferramentas */}
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-6 mb-8">
             {/* YouTube Card */}
             <Dialog open={isYoutubeModalOpen} onOpenChange={setIsYoutubeModalOpen}>
               <DialogTrigger asChild>
-                <div className="card-modern rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-200">
+                <div className={`card-modern rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-200 ${
+                  selectedPlatform === 'youtube' ? 'ring-2 ring-red-500 bg-red-500/5' : ''
+                }`}>
                   <div className="flex flex-col items-center text-center space-y-4">
-                    <div className="p-4 bg-red-500/10 rounded-full">
+                    <div className={`p-4 rounded-full ${
+                      selectedPlatform === 'youtube' ? 'bg-red-500/20' : 'bg-red-500/10'
+                    }`}>
                       <Youtube className="h-8 w-8 text-red-500" />
                     </div>
                     <h3 className="text-xl font-semibold">YouTube</h3>
@@ -369,120 +374,29 @@ const Index = () => {
               </DialogContent>
             </Dialog>
 
-            {/* Analytics Card */}
-            <Dialog open={isAnalyticsModalOpen} onOpenChange={setIsAnalyticsModalOpen}>
-              <DialogTrigger asChild>
-                <div className="card-modern rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-200">
-                  <div className="flex flex-col items-center text-center space-y-4">
-                    <div className="p-4 bg-blue-500/10 rounded-full">
-                      <BarChart3 className="h-8 w-8 text-blue-500" />
-                    </div>
-                    <h3 className="text-xl font-semibold">Analytics</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Análise estatística de dados
-                    </p>
-                  </div>
+            {/* Analytics Card - desabilitado */}
+            <div className={`card-modern rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-200 opacity-50`}>
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="p-4 bg-blue-500/10 rounded-full">
+                  <BarChart3 className="h-8 w-8 text-blue-500" />
                 </div>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-y-auto card-modern">
-                <DialogHeader>
-                  <DialogTitle className="text-xl flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5 text-blue-500" />
-                    YouTube Analytics
-                  </DialogTitle>
-                </DialogHeader>
-                {commentData.length > 0 ? (
-                  <div className="space-y-6">
-                    <div className="text-center">
-                      <h2 className="text-xl font-bold mb-2">{selectedVideoTitle}</h2>
-                      <h3 className="text-lg font-semibold mb-2">Análise de Sentimentos</h3>
-                      <p className="text-muted-foreground">
-                        Classificação de {commentData.length} comentários analisados
-                      </p>
-                    </div>
-                    
-                    <div className="h-80">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={getChartData()}
-                            cx="50%"
-                            cy="50%"
-                            outerRadius={80}
-                            dataKey="value"
-                          >
-                            {getChartData().map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip />
-                          <Legend />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-4 text-center">
-                      {getChartData().map((item) => (
-                        <div key={item.name} className="p-4 border border-border rounded-lg">
-                          <div className="flex items-center justify-center gap-2 mb-2">
-                            <div 
-                              className="w-3 h-3 rounded-full" 
-                              style={{ backgroundColor: item.color }}
-                            />
-                            <span className="font-medium">{item.name}</span>
-                          </div>
-                          <p className="text-2xl font-bold">{item.value}</p>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Seção de Sugestões - sempre visível para teste */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold">Sugestões por Tema</h3>
-                      {sentimentData.length > 0 ? (
-                        <div className="space-y-3">
-                          {Object.entries(getSuggestionsByTheme()).map(([theme, suggestions]) => (
-                            <div key={theme} className="p-4 border border-border rounded-lg bg-card">
-                              <h4 className="font-medium mb-2 text-primary">{theme}</h4>
-                              <ul className="space-y-1">
-                                {suggestions.map((suggestion, index) => (
-                                  <li key={index} className="text-sm text-muted-foreground">
-                                    • {suggestion}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="p-4 border border-border rounded-lg bg-card">
-                          <p className="text-sm text-muted-foreground">
-                            Nenhuma sugestão encontrada para este vídeo.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-8 text-center">
-                    <div className="space-y-4">
-                      <BarChart3 className="h-16 w-16 text-muted-foreground mx-auto" />
-                      <h3 className="text-lg font-semibold">Nenhum dado disponível</h3>
-                      <p className="text-muted-foreground">
-                        Selecione um vídeo para visualizar a análise de comentários.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </DialogContent>
-            </Dialog>
+                <h3 className="text-xl font-semibold">Analytics</h3>
+                <p className="text-sm text-muted-foreground">
+                  Análise estatística de dados
+                </p>
+              </div>
+            </div>
 
             {/* Twitter/X Card */}
             <Dialog open={isTwitterModalOpen} onOpenChange={setIsTwitterModalOpen}>
               <DialogTrigger asChild>
-                <div className="card-modern rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-200">
+                <div className={`card-modern rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-200 ${
+                  selectedPlatform === 'twitter' ? 'ring-2 ring-gray-500 bg-gray-500/5' : ''
+                }`}>
                   <div className="flex flex-col items-center text-center space-y-4">
-                    <div className="p-4 bg-gray-500/10 rounded-full">
+                    <div className={`p-4 rounded-full ${
+                      selectedPlatform === 'twitter' ? 'bg-gray-500/20' : 'bg-gray-500/10'
+                    }`}>
                       <Twitter className="h-8 w-8 text-gray-400" />
                     </div>
                     <h3 className="text-xl font-semibold">X (Twitter)</h3>
@@ -511,6 +425,86 @@ const Index = () => {
               </DialogContent>
             </Dialog>
           </div>
+
+          {/* Seção de Análise - embaixo dos ícones */}
+          {selectedPlatform && commentData.length > 0 && (
+            <div className="mt-8 space-y-6 animate-fade-in">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold mb-2">{selectedVideoTitle}</h2>
+                <h3 className="text-xl font-semibold mb-2">Análise de Sentimentos</h3>
+                <p className="text-muted-foreground">
+                  Classificação de {commentData.length} comentários analisados
+                </p>
+              </div>
+              
+              <div className="grid lg:grid-cols-2 gap-8">
+                {/* Gráfico */}
+                <div className="space-y-4">
+                  <div className="h-80 bg-card rounded-lg p-4 border border-border">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={getChartData()}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          dataKey="value"
+                        >
+                          {getChartData().map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    {getChartData().map((item) => (
+                      <div key={item.name} className="p-4 border border-border rounded-lg bg-card">
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          <div 
+                            className="w-3 h-3 rounded-full" 
+                            style={{ backgroundColor: item.color }}
+                          />
+                          <span className="font-medium">{item.name}</span>
+                        </div>
+                        <p className="text-2xl font-bold">{item.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Sugestões */}
+                <div className="space-y-4">
+                  <h3 className="text-xl font-semibold">Sugestões por Tema</h3>
+                  {sentimentData.length > 0 ? (
+                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                      {Object.entries(getSuggestionsByTheme()).map(([theme, suggestions]) => (
+                        <div key={theme} className="p-4 border border-border rounded-lg bg-card">
+                          <h4 className="font-medium mb-2 text-primary">{theme}</h4>
+                          <ul className="space-y-1">
+                            {suggestions.map((suggestion, index) => (
+                              <li key={index} className="text-sm text-muted-foreground">
+                                • {suggestion}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-8 border border-border rounded-lg bg-card text-center">
+                      <p className="text-muted-foreground">
+                        Nenhuma sugestão encontrada para este vídeo.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </div>
