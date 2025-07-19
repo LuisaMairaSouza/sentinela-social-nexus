@@ -69,6 +69,10 @@ const Index = () => {
     try {
       console.log("Enviando requisição para API com ID:", youtubeChannelId, "e API Key:", youtubeApiKey);
       
+      // Criar AbortController para timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 segundos
+      
       const response = await fetch("https://api.teste.onlinecenter.com.br/webhook/buscar-videos-youtube", {
         method: "POST",
         headers: {
@@ -79,8 +83,10 @@ const Index = () => {
           id: youtubeChannelId.trim(),
           apikey: youtubeApiKey.trim()
         }),
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
       console.log("Response status:", response.status);
       console.log("Response headers:", response.headers);
 
@@ -117,9 +123,22 @@ const Index = () => {
       });
     } catch (error) {
       console.error("Erro detalhado:", error);
+      
+      let errorMessage = "Falha ao buscar vídeos. Verifique sua conexão com a internet.";
+      
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          errorMessage = "Timeout: A requisição demorou muito para responder. Tente novamente.";
+        } else if (error.message.includes('fetch')) {
+          errorMessage = "Erro de conexão: Verifique se o servidor está acessível e tente novamente.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: "Erro",
-        description: error instanceof Error ? error.message : "Falha ao buscar vídeos. Verifique o ID do canal e tente novamente.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
