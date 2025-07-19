@@ -175,12 +175,12 @@ const Index = () => {
           console.log(`Item ${index}:`, item);
           
           // Se tem 'classificacao', é um comentário
-          if (item.classificacao !== undefined) {
+          if (item.classificacao !== undefined && item.classificacao !== null && item.classificacao !== '') {
             console.log("Adicionando como comentário:", item);
             commentData.push(item);
           }
-          // Se tem 'sugestao', é uma análise de sentimento
-          if (item.sugestao !== undefined) {
+          // Se tem 'sugestao', é uma análise de sentimento/sugestão
+          if (item.sugestao !== undefined && item.sugestao !== null && item.sugestao !== '') {
             console.log("Adicionando como sugestão:", item);
             sentimentData.push(item);
           }
