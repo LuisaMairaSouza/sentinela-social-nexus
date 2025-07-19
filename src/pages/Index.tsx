@@ -66,29 +66,26 @@ const Index = () => {
     }
 
     setIsLoading(true);
+    console.log("=== INICIANDO REQUISIÇÃO ===");
+    console.log("URL:", "https://api.teste.onlinecenter.com.br/webhook/buscar-videos-youtube");
+    console.log("Payload:", { id: youtubeChannelId.trim(), apikey: youtubeApiKey.trim() });
+    
     try {
-      console.log("Enviando requisição para API com ID:", youtubeChannelId, "e API Key:", youtubeApiKey);
-      
-      // Criar AbortController para timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 segundos
-      
       const response = await fetch("https://api.teste.onlinecenter.com.br/webhook/buscar-videos-youtube", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json",
         },
         body: JSON.stringify({ 
           id: youtubeChannelId.trim(),
           apikey: youtubeApiKey.trim()
-        }),
-        signal: controller.signal
+        })
       });
 
-      clearTimeout(timeoutId);
-      console.log("Response status:", response.status);
-      console.log("Response headers:", response.headers);
+      console.log("=== RESPOSTA RECEBIDA ===");
+      console.log("Status:", response.status);
+      console.log("Status Text:", response.statusText);
+      console.log("Headers:", [...response.headers.entries()]);
 
       if (!response.ok) {
         const errorText = await response.text();
