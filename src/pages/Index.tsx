@@ -142,8 +142,7 @@ const Index = () => {
     try {
       console.log("Enviando dados do vídeo:", video.id_video, "com API Key:", youtubeApiKey);
       
-      // Primeira requisição - comentários
-      const response1 = await fetch("https://api.teste.onlinecenter.com.br/webhook/buscar-youtube", {
+      const response = await fetch("https://api.teste.onlinecenter.com.br/webhook/buscar-youtube", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -155,41 +154,34 @@ const Index = () => {
         }),
       });
 
-      if (!response1.ok) {
-        const errorText = await response1.text();
+      if (!response.ok) {
+        const errorText = await response.text();
         console.error("Erro na resposta:", errorText);
-        throw new Error(`Erro ${response1.status}: ${response1.statusText}`);
+        throw new Error(`Erro ${response.status}: ${response.statusText}`);
       }
 
-      const commentData = await response1.json();
-      console.log("Resposta do webhook (comentários):", commentData);
+      const data = await response.json();
+      console.log("Resposta do webhook:", data);
       
-      // Segunda requisição - análise de sentimentos (opcional)
-      // Desabilitado por enquanto até a URL estar disponível
+      // Separar dados de comentários e sugestões
+      const commentData: CommentData[] = [];
       const sentimentData: SentimentData[] = [];
-      /* 
-      try {
-        const response2 = await fetch("https://api.teste.onlinecenter.com.br/webhook/analise-sentimentos", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-          },
-          body: JSON.stringify({
-            apiKey: youtubeApiKey.trim(),
-            id_video: video.id_video
-          }),
+      
+      if (Array.isArray(data)) {
+        data.forEach(item => {
+          // Se tem 'classificacao', é um comentário
+          if (item.classificacao) {
+            commentData.push(item);
+          }
+          // Se tem 'sugestao', é uma análise de sentimento
+          else if (item.sugestao) {
+            sentimentData.push(item);
+          }
         });
-
-        if (response2.ok) {
-          const sentimentData = await response2.json();
-          console.log("Resposta do webhook (sentimentos):", sentimentData);
-          setSentimentData(sentimentData);
-        }
-      } catch (error) {
-        console.warn("Erro na segunda requisição, continuando apenas com comentários:", error);
       }
-      */
+      
+      console.log("Comentários processados:", commentData);
+      console.log("Sugestões processadas:", sentimentData);
       
       // Processar dados e fechar popup
       setCommentData(commentData);
