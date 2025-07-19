@@ -384,7 +384,7 @@ const Index = () => {
                   </div>
                 </div>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-2xl card-modern">
+              <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-y-auto card-modern">
                 <DialogHeader>
                   <DialogTitle className="text-xl flex items-center gap-2">
                     <BarChart3 className="h-5 w-5 text-blue-500" />
