@@ -267,19 +267,37 @@ const Index = () => {
             {/* YouTube Card */}
             <Dialog open={isYoutubeModalOpen} onOpenChange={setIsYoutubeModalOpen}>
               <DialogTrigger asChild>
-                <div className={`card-modern rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-200 ${
-                  selectedPlatform === 'youtube' ? 'ring-2 ring-red-500 bg-red-500/5' : ''
+                <div className={`card-modern rounded-lg p-6 cursor-pointer transition-all duration-200 relative ${
+                  selectedPlatform === 'youtube' 
+                    ? 'ring-4 ring-red-500 bg-red-500/10 shadow-lg shadow-red-500/25 scale-105' 
+                    : 'hover:shadow-lg'
                 }`}>
-                  <div className="flex flex-col items-center text-center space-y-4">
-                    <div className={`p-4 rounded-full ${
-                      selectedPlatform === 'youtube' ? 'bg-red-500/20' : 'bg-red-500/10'
-                    }`}>
-                      <Youtube className="h-8 w-8 text-red-500" />
+                  {selectedPlatform === 'youtube' && (
+                    <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold animate-pulse">
+                      ✓
                     </div>
-                    <h3 className="text-xl font-semibold">YouTube</h3>
+                  )}
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    <div className={`p-4 rounded-full transition-all duration-200 ${
+                      selectedPlatform === 'youtube' 
+                        ? 'bg-red-500/30 shadow-lg' 
+                        : 'bg-red-500/10'
+                    }`}>
+                      <Youtube className={`h-8 w-8 transition-all duration-200 ${
+                        selectedPlatform === 'youtube' ? 'text-red-600 scale-110' : 'text-red-500'
+                      }`} />
+                    </div>
+                    <h3 className={`text-xl font-semibold ${
+                      selectedPlatform === 'youtube' ? 'text-red-600' : ''
+                    }`}>YouTube</h3>
                     <p className="text-sm text-muted-foreground">
                       Buscar e analisar vídeos de canais
                     </p>
+                    {selectedPlatform === 'youtube' && (
+                      <div className="text-xs text-red-600 font-medium">
+                        ● ANALISANDO
+                      </div>
+                    )}
                   </div>
                 </div>
               </DialogTrigger>
@@ -390,19 +408,37 @@ const Index = () => {
             {/* Twitter/X Card */}
             <Dialog open={isTwitterModalOpen} onOpenChange={setIsTwitterModalOpen}>
               <DialogTrigger asChild>
-                <div className={`card-modern rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-200 ${
-                  selectedPlatform === 'twitter' ? 'ring-2 ring-gray-500 bg-gray-500/5' : ''
+                <div className={`card-modern rounded-lg p-6 cursor-pointer transition-all duration-200 relative ${
+                  selectedPlatform === 'twitter' 
+                    ? 'ring-4 ring-gray-500 bg-gray-500/10 shadow-lg shadow-gray-500/25 scale-105' 
+                    : 'hover:shadow-lg'
                 }`}>
-                  <div className="flex flex-col items-center text-center space-y-4">
-                    <div className={`p-4 rounded-full ${
-                      selectedPlatform === 'twitter' ? 'bg-gray-500/20' : 'bg-gray-500/10'
-                    }`}>
-                      <Twitter className="h-8 w-8 text-gray-400" />
+                  {selectedPlatform === 'twitter' && (
+                    <div className="absolute -top-2 -right-2 bg-gray-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold animate-pulse">
+                      ✓
                     </div>
-                    <h3 className="text-xl font-semibold">X (Twitter)</h3>
+                  )}
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    <div className={`p-4 rounded-full transition-all duration-200 ${
+                      selectedPlatform === 'twitter' 
+                        ? 'bg-gray-500/30 shadow-lg' 
+                        : 'bg-gray-500/10'
+                    }`}>
+                      <Twitter className={`h-8 w-8 transition-all duration-200 ${
+                        selectedPlatform === 'twitter' ? 'text-gray-600 scale-110' : 'text-gray-400'
+                      }`} />
+                    </div>
+                    <h3 className={`text-xl font-semibold ${
+                      selectedPlatform === 'twitter' ? 'text-gray-600' : ''
+                    }`}>X (Twitter)</h3>
                     <p className="text-sm text-muted-foreground">
                       Análise de posts e perfis
                     </p>
+                    {selectedPlatform === 'twitter' && (
+                      <div className="text-xs text-gray-600 font-medium">
+                        ● ANALISANDO
+                      </div>
+                    )}
                   </div>
                 </div>
               </DialogTrigger>
