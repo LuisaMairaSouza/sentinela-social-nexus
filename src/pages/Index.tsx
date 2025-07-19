@@ -178,33 +178,45 @@ const Index = () => {
       }
 
       const data = await response.json();
-      console.log("Resposta do webhook:", data);
+      console.log("=== DADOS RECEBIDOS DO WEBHOOK ===");
+      console.log("Tipo dos dados:", typeof data);
+      console.log("É array?", Array.isArray(data));
+      console.log("Dados completos:", JSON.stringify(data, null, 2));
       
       // Separar dados de comentários e sugestões
       const commentData: CommentData[] = [];
       const sentimentData: SentimentData[] = [];
       
-      console.log("Dados recebidos para processamento:", data);
-      
       if (Array.isArray(data)) {
+        console.log("=== PROCESSANDO ARRAY DE", data.length, "ITENS ===");
+        
         data.forEach((item, index) => {
-          console.log(`Item ${index}:`, item);
+          console.log(`--- Item ${index} ---`);
+          console.log("Item completo:", JSON.stringify(item, null, 2));
+          console.log("Tem classificacao?", 'classificacao' in item, "Valor:", item.classificacao);
+          console.log("Tem sugestao?", 'sugestao' in item, "Valor:", item.sugestao);
           
           // Se tem 'classificacao', é um comentário
-          if (item.classificacao !== undefined && item.classificacao !== null && item.classificacao !== '') {
-            console.log("Adicionando como comentário:", item);
+          if ('classificacao' in item && item.classificacao) {
+            console.log("✅ ADICIONANDO COMO COMENTÁRIO");
             commentData.push(item);
           }
-          // Se tem 'sugestao', é uma análise de sentimento/sugestão
-          if (item.sugestao !== undefined && item.sugestao !== null && item.sugestao !== '') {
-            console.log("Adicionando como sugestão:", item);
+          
+          // Se tem 'sugestao', é uma sugestão
+          if ('sugestao' in item && item.sugestao) {
+            console.log("✅ ADICIONANDO COMO SUGESTÃO");
             sentimentData.push(item);
           }
         });
+      } else {
+        console.log("❌ DADOS NÃO SÃO UM ARRAY!");
       }
       
-      console.log("Comentários processados:", commentData);
-      console.log("Sugestões processadas:", sentimentData);
+      console.log("=== RESULTADO FINAL ===");
+      console.log("Comentários encontrados:", commentData.length);
+      console.log("Sugestões encontradas:", sentimentData.length);
+      console.log("Lista de comentários:", commentData);
+      console.log("Lista de sugestões:", sentimentData);
       
       // Processar dados, marcar plataforma e mostrar embaixo
       setCommentData(commentData);
