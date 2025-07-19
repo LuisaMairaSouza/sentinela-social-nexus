@@ -164,30 +164,36 @@ const Index = () => {
       const commentData = await response1.json();
       console.log("Resposta do webhook (comentários):", commentData);
       
-      // Segunda requisição - análise de sentimentos
-      const response2 = await fetch("https://api.teste.onlinecenter.com.br/webhook/analise-sentimentos", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-        },
-        body: JSON.stringify({
-          apiKey: youtubeApiKey.trim(),
-          id_video: video.id_video
-        }),
-      });
+      // Segunda requisição - análise de sentimentos (opcional)
+      // Desabilitado por enquanto até a URL estar disponível
+      const sentimentData: SentimentData[] = [];
+      /* 
+      try {
+        const response2 = await fetch("https://api.teste.onlinecenter.com.br/webhook/analise-sentimentos", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+          },
+          body: JSON.stringify({
+            apiKey: youtubeApiKey.trim(),
+            id_video: video.id_video
+          }),
+        });
 
-      if (!response2.ok) {
-        console.warn("Erro na segunda requisição, continuando apenas com comentários");
-        setSentimentData([]);
-      } else {
-        const sentimentData = await response2.json();
-        console.log("Resposta do webhook (sentimentos):", sentimentData);
-        setSentimentData(sentimentData);
+        if (response2.ok) {
+          const sentimentData = await response2.json();
+          console.log("Resposta do webhook (sentimentos):", sentimentData);
+          setSentimentData(sentimentData);
+        }
+      } catch (error) {
+        console.warn("Erro na segunda requisição, continuando apenas com comentários:", error);
       }
+      */
       
       // Processar dados e fechar popup
       setCommentData(commentData);
+      setSentimentData(sentimentData);
       setSelectedVideoTitle(video.title);
       setIsYoutubeModalOpen(false);
       setIsAnalyticsModalOpen(true);
