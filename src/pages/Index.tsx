@@ -167,14 +167,20 @@ const Index = () => {
       const commentData: CommentData[] = [];
       const sentimentData: SentimentData[] = [];
       
+      console.log("Dados recebidos para processamento:", data);
+      
       if (Array.isArray(data)) {
-        data.forEach(item => {
+        data.forEach((item, index) => {
+          console.log(`Item ${index}:`, item);
+          
           // Se tem 'classificacao', é um comentário
-          if (item.classificacao) {
+          if (item.classificacao !== undefined) {
+            console.log("Adicionando como comentário:", item);
             commentData.push(item);
           }
           // Se tem 'sugestao', é uma análise de sentimento
-          else if (item.sugestao) {
+          if (item.sugestao !== undefined) {
+            console.log("Adicionando como sugestão:", item);
             sentimentData.push(item);
           }
         });
