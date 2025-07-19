@@ -436,9 +436,10 @@ const Index = () => {
                       ))}
                     </div>
 
-                    {sentimentData.length > 0 && (
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Sugestões por Tema</h3>
+                    {/* Seção de Sugestões - sempre visível para teste */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold">Sugestões por Tema</h3>
+                      {sentimentData.length > 0 ? (
                         <div className="space-y-3">
                           {Object.entries(getSuggestionsByTheme()).map(([theme, suggestions]) => (
                             <div key={theme} className="p-4 border border-border rounded-lg bg-card">
@@ -453,8 +454,14 @@ const Index = () => {
                             </div>
                           ))}
                         </div>
-                      </div>
-                    )}
+                      ) : (
+                        <div className="p-4 border border-border rounded-lg bg-card">
+                          <p className="text-sm text-muted-foreground">
+                            Nenhuma sugestão encontrada para este vídeo.
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ) : (
                   <div className="p-8 text-center">
