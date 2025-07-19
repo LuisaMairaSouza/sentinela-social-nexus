@@ -22,6 +22,14 @@ interface CommentData {
   data_hora: string;
 }
 
+interface SentimentData {
+  id: string;
+  sugestao: string;
+  tema: string;
+  rede_social: string;
+  data: string;
+}
+
 const Index = () => {
   const [youtubeApiKey, setYoutubeApiKey] = useState("");
   const [youtubeChannelId, setYoutubeChannelId] = useState("");
@@ -33,6 +41,8 @@ const Index = () => {
   const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
   const [isTwitterModalOpen, setIsTwitterModalOpen] = useState(false);
   const [commentData, setCommentData] = useState<CommentData[]>([]);
+  const [sentimentData, setSentimentData] = useState<SentimentData[]>([]);
+  const [selectedVideoTitle, setSelectedVideoTitle] = useState("");
   const { toast } = useToast();
 
   const handleYoutubeSearch = async () => {
@@ -132,7 +142,8 @@ const Index = () => {
     try {
       console.log("Enviando dados do vídeo:", video.id_video, "com API Key:", youtubeApiKey);
       
-      const response = await fetch("https://api.teste.onlinecenter.com.br/webhook/buscar-youtube", {
+      // Primeira requisição - comentários
+      const response1 = await fetch("https://api.teste.onlinecenter.com.br/webhook/buscar-youtube", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -144,23 +155,46 @@ const Index = () => {
         }),
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
+      if (!response1.ok) {
+        const errorText = await response1.text();
         console.error("Erro na resposta:", errorText);
-        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+        throw new Error(`Erro ${response1.status}: ${response1.statusText}`);
       }
 
-      const data = await response.json();
-      console.log("Resposta do webhook:", data);
+      const commentData = await response1.json();
+      console.log("Resposta do webhook (comentários):", commentData);
+      
+      // Segunda requisição - análise de sentimentos
+      const response2 = await fetch("https://api.teste.onlinecenter.com.br/webhook/analise-sentimentos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({
+          apiKey: youtubeApiKey.trim(),
+          id_video: video.id_video
+        }),
+      });
+
+      if (!response2.ok) {
+        console.warn("Erro na segunda requisição, continuando apenas com comentários");
+        setSentimentData([]);
+      } else {
+        const sentimentData = await response2.json();
+        console.log("Resposta do webhook (sentimentos):", sentimentData);
+        setSentimentData(sentimentData);
+      }
       
       // Processar dados e fechar popup
-      setCommentData(data);
+      setCommentData(commentData);
+      setSelectedVideoTitle(video.title);
       setIsYoutubeModalOpen(false);
       setIsAnalyticsModalOpen(true);
       
       toast({
         title: "Sucesso",
-        description: "Análise de comentários carregada!",
+        description: "Análise carregada!",
       });
     } catch (error) {
       console.error("Erro ao enviar dados do vídeo:", error);
@@ -184,6 +218,19 @@ const Index = () => {
       { name: 'Negativos', value: counts.negativo || 0, color: '#ef4444' },
       { name: 'Neutros', value: counts.neutro || 0, color: '#6b7280' }
     ];
+  };
+
+  const getSuggestionsByTheme = () => {
+    const grouped = sentimentData.reduce((acc, item) => {
+      const theme = item.tema || 'Sem tema';
+      if (!acc[theme]) {
+        acc[theme] = [];
+      }
+      acc[theme].push(item.sugestao);
+      return acc;
+    }, {} as Record<string, string[]>);
+    
+    return grouped;
   };
 
   return (
@@ -343,6 +390,7 @@ const Index = () => {
                 {commentData.length > 0 ? (
                   <div className="space-y-6">
                     <div className="text-center">
+                      <h2 className="text-xl font-bold mb-2">{selectedVideoTitle}</h2>
                       <h3 className="text-lg font-semibold mb-2">Análise de Sentimentos</h3>
                       <p className="text-muted-foreground">
                         Classificação de {commentData.length} comentários analisados
@@ -383,6 +431,26 @@ const Index = () => {
                         </div>
                       ))}
                     </div>
+
+                    {sentimentData.length > 0 && (
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-semibold">Sugestões por Tema</h3>
+                        <div className="space-y-3">
+                          {Object.entries(getSuggestionsByTheme()).map(([theme, suggestions]) => (
+                            <div key={theme} className="p-4 border border-border rounded-lg bg-card">
+                              <h4 className="font-medium mb-2 text-primary">{theme}</h4>
+                              <ul className="space-y-1">
+                                {suggestions.map((suggestion, index) => (
+                                  <li key={index} className="text-sm text-muted-foreground">
+                                    • {suggestion}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="p-8 text-center">
