@@ -242,8 +242,13 @@ const Index = () => {
   };
 
   const getSuggestionsByTheme = () => {
+    console.log("=== PROCESSANDO SUGESTÕES ===");
+    console.log("sentimentData:", sentimentData);
+    console.log("sentimentData.length:", sentimentData.length);
+    
     const grouped = sentimentData.reduce((acc, item) => {
       const theme = item.tema || 'Sem tema';
+      console.log("Processando item:", item, "Tema:", theme);
       if (!acc[theme]) {
         acc[theme] = [];
       }
@@ -251,6 +256,7 @@ const Index = () => {
       return acc;
     }, {} as Record<string, string[]>);
     
+    console.log("Sugestões agrupadas:", grouped);
     return grouped;
   };
 
@@ -531,6 +537,18 @@ const Index = () => {
                 {/* Sugestões */}
                 <div className="space-y-4">
                   <h3 className="text-xl font-semibold">Sugestões por Tema</h3>
+                  <div className="p-4 border border-border rounded-lg bg-card">
+                    <h4 className="font-medium mb-2 text-primary">Status das Sugestões</h4>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Total de itens de sentimento: {sentimentData.length}
+                    </p>
+                    {sentimentData.map((item, index) => (
+                      <div key={index} className="text-xs text-muted-foreground mb-1">
+                        Item {index}: Sugestão="{item.sugestao}" | Tema="{item.tema}"
+                      </div>
+                    ))}
+                  </div>
+                  
                   {sentimentData.length > 0 ? (
                     <div className="space-y-3 max-h-96 overflow-y-auto">
                       {Object.entries(getSuggestionsByTheme()).map(([theme, suggestions]) => (
@@ -547,7 +565,7 @@ const Index = () => {
                       ))}
                     </div>
                   ) : (
-                    <div className="p-8 border border-border rounded-lg bg-card text-center">
+                    <div className="p-4 border border-border rounded-lg bg-card text-center">
                       <p className="text-muted-foreground">
                         Nenhuma sugestão encontrada para este vídeo.
                       </p>
