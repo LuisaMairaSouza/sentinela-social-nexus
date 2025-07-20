@@ -233,6 +233,22 @@ const Index = () => {
             }
           });
         }
+      } else if (data && typeof data === 'object') {
+        // Se chegou um objeto único, verificar se é comentário ou sugestão
+        console.log("=== PROCESSANDO OBJETO ÚNICO ===");
+        console.log("Objeto completo:", JSON.stringify(data, null, 2));
+        
+        // Se tem 'classificacao', é um comentário
+        if ('classificacao' in data && data.classificacao) {
+          console.log("✅ ADICIONANDO OBJETO COMO COMENTÁRIO");
+          commentData.push(data);
+        }
+        
+        // Se tem 'sugestao', é uma sugestão
+        if ('sugestao' in data && data.sugestao) {
+          console.log("✅ ADICIONANDO OBJETO COMO SUGESTÃO");
+          sentimentData.push(data);
+        }
       } else {
         console.log("❌ FORMATO DE DADOS NÃO RECONHECIDO!");
       }
@@ -522,7 +538,7 @@ const Index = () => {
           </div>
 
           {/* Seção de Análise - embaixo dos ícones */}
-          {selectedPlatform && commentData.length > 0 && (
+          {selectedPlatform && (commentData.length > 0 || sentimentData.length > 0) && (
             <div className="mt-8 space-y-6 animate-fade-in">
               <div className="text-center">
                 <h2 className="text-2xl font-bold mb-2">{selectedVideoTitle}</h2>
