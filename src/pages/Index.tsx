@@ -44,6 +44,7 @@ const Index = () => {
   const [commentData, setCommentData] = useState<CommentData[]>([]);
   const [sentimentData, setSentimentData] = useState<SentimentData[]>([]);
   const [selectedVideoTitle, setSelectedVideoTitle] = useState("");
+  const [selectedVideoId, setSelectedVideoId] = useState("");
   const { toast } = useToast();
 
   const handleYoutubeSearch = async () => {
@@ -237,6 +238,7 @@ const Index = () => {
       setCommentData(commentData);
       setSentimentData([]); // Limpar sugestões antigas
       setSelectedVideoTitle(video.title);
+      setSelectedVideoId(video.id_video); // Salvar o ID do vídeo
       setSelectedPlatform("youtube");
       setIsYoutubeModalOpen(false);
       
@@ -256,7 +258,16 @@ const Index = () => {
 
   const handleSuggestionsClick = async () => {
     try {
-      console.log("Buscando sugestões com API Key:", youtubeApiKey);
+      if (!selectedVideoId) {
+        toast({
+          title: "Erro",
+          description: "Nenhum vídeo selecionado. Por favor, selecione um vídeo primeiro.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log("Buscando sugestões com API Key:", youtubeApiKey, "e ID do vídeo:", selectedVideoId);
       
       const response = await fetch("https://api.teste.onlinecenter.com.br/webhook/buscar-youtube-sugestoes", {
         method: "POST",
@@ -265,7 +276,8 @@ const Index = () => {
           "Accept": "application/json",
         },
         body: JSON.stringify({
-          apiKey: youtubeApiKey.trim()
+          apiKey: youtubeApiKey.trim(),
+          id_video: selectedVideoId
         }),
       });
 
