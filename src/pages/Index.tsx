@@ -188,65 +188,117 @@ const Index = () => {
       const sentimentData: SentimentData[] = [];
       
       if (Array.isArray(data)) {
-        console.log("=== PROCESSANDO ARRAY ÚNICO DE", data.length, "ITENS ===");
+        console.log("=== PROCESSANDO ARRAY ===");
         
         data.forEach((item, index) => {
           console.log(`--- Item ${index} ---`);
           console.log("Item completo:", JSON.stringify(item, null, 2));
-          console.log("Tem classificacao?", 'classificacao' in item, "Valor:", item.classificacao);
-          console.log("Tem sugestao?", 'sugestao' in item, "Valor:", item.sugestao);
           
-          // Se tem 'classificacao', é um comentário
+          // Novo formato: objeto com 'analise' e 'sugestoes'
+          if (item.analise && Array.isArray(item.analise)) {
+            console.log("=== PROCESSANDO ANÁLISES ===");
+            item.analise.forEach((analiseItem: any, analiseIndex: number) => {
+              if (analiseItem.json && analiseItem.json.valor) {
+                const valorData = analiseItem.json.valor;
+                console.log(`✅ ANÁLISE ${analiseIndex}:`, valorData);
+                
+                // Criar objeto compatível com CommentData
+                const commentObj: CommentData = {
+                  id: `analise_${analiseIndex}`,
+                  classificacao: valorData.classificacao || 'neutro',
+                  palavras_chaves: valorData['palavras-chave'] || '',
+                  tema: valorData.tema || '',
+                  rede_social: valorData.rede_social || 'YouTube',
+                  data_hora: new Date().toISOString()
+                };
+                commentData.push(commentObj);
+              }
+            });
+          }
+          
+          if (item.sugestoes && Array.isArray(item.sugestoes)) {
+            console.log("=== PROCESSANDO SUGESTÕES ===");
+            item.sugestoes.forEach((sugestaoItem: any, sugestaoIndex: number) => {
+              if (sugestaoItem.json) {
+                const sugestaoData = sugestaoItem.json;
+                console.log(`✅ SUGESTÃO ${sugestaoIndex}:`, sugestaoData);
+                
+                // Criar objeto compatível com SentimentData
+                const sugestaoObj: SentimentData = {
+                  id: sugestaoData.id ? sugestaoData.id.toString() : `sugestao_${sugestaoIndex}`,
+                  sugestao: sugestaoData.sugestao || '',
+                  tema: sugestaoData.tema || '',
+                  rede_social: sugestaoData.rede_social || 'YouTube',
+                  data: sugestaoData.data || new Date().toISOString().split('T')[0]
+                };
+                sentimentData.push(sugestaoObj);
+              }
+            });
+          }
+          
+          // Formato antigo: verificar se é comentário ou sugestão diretamente
           if ('classificacao' in item && item.classificacao) {
-            console.log("✅ ADICIONANDO COMO COMENTÁRIO");
+            console.log("✅ ADICIONANDO COMO COMENTÁRIO (formato antigo)");
             commentData.push(item);
           }
           
-          // Se tem 'sugestao', é uma sugestão
           if ('sugestao' in item && item.sugestao) {
-            console.log("✅ ADICIONANDO COMO SUGESTÃO");
+            console.log("✅ ADICIONANDO COMO SUGESTÃO (formato antigo)");
             sentimentData.push(item);
           }
         });
-      } else if (data && Array.isArray(data[0]) && Array.isArray(data[1])) {
-        // Se chegaram dois arrays separados
-        console.log("=== PROCESSANDO DOIS ARRAYS SEPARADOS ===");
-        console.log("Array 1 (análise de sentimento):", data[0]);
-        console.log("Array 2 (sugestões):", data[1]);
-        
-        // Primeiro array: análise de sentimentos
-        if (Array.isArray(data[0])) {
-          data[0].forEach((item: any, index: number) => {
-            if ('classificacao' in item) {
-              console.log(`✅ COMENTÁRIO ${index}:`, item);
-              commentData.push(item);
-            }
-          });
-        }
-        
-        // Segundo array: sugestões
-        if (Array.isArray(data[1])) {
-          data[1].forEach((item: any, index: number) => {
-            if ('sugestao' in item) {
-              console.log(`✅ SUGESTÃO ${index}:`, item);
-              sentimentData.push(item);
-            }
-          });
-        }
       } else if (data && typeof data === 'object') {
-        // Se chegou um objeto único, verificar se é comentário ou sugestão
         console.log("=== PROCESSANDO OBJETO ÚNICO ===");
         console.log("Objeto completo:", JSON.stringify(data, null, 2));
         
-        // Se tem 'classificacao', é um comentário
+        // Novo formato: objeto com 'analise' e 'sugestoes'
+        if (data.analise && Array.isArray(data.analise)) {
+          console.log("=== PROCESSANDO ANÁLISES DO OBJETO ===");
+          data.analise.forEach((analiseItem: any, analiseIndex: number) => {
+            if (analiseItem.json && analiseItem.json.valor) {
+              const valorData = analiseItem.json.valor;
+              console.log(`✅ ANÁLISE ${analiseIndex}:`, valorData);
+              
+              const commentObj: CommentData = {
+                id: `analise_${analiseIndex}`,
+                classificacao: valorData.classificacao || 'neutro',
+                palavras_chaves: valorData['palavras-chave'] || '',
+                tema: valorData.tema || '',
+                rede_social: valorData.rede_social || 'YouTube',
+                data_hora: new Date().toISOString()
+              };
+              commentData.push(commentObj);
+            }
+          });
+        }
+        
+        if (data.sugestoes && Array.isArray(data.sugestoes)) {
+          console.log("=== PROCESSANDO SUGESTÕES DO OBJETO ===");
+          data.sugestoes.forEach((sugestaoItem: any, sugestaoIndex: number) => {
+            if (sugestaoItem.json) {
+              const sugestaoData = sugestaoItem.json;
+              console.log(`✅ SUGESTÃO ${sugestaoIndex}:`, sugestaoData);
+              
+              const sugestaoObj: SentimentData = {
+                id: sugestaoData.id ? sugestaoData.id.toString() : `sugestao_${sugestaoIndex}`,
+                sugestao: sugestaoData.sugestao || '',
+                tema: sugestaoData.tema || '',
+                rede_social: sugestaoData.rede_social || 'YouTube',
+                data: sugestaoData.data || new Date().toISOString().split('T')[0]
+              };
+              sentimentData.push(sugestaoObj);
+            }
+          });
+        }
+        
+        // Formato antigo: verificar se é comentário ou sugestão diretamente
         if ('classificacao' in data && data.classificacao) {
-          console.log("✅ ADICIONANDO OBJETO COMO COMENTÁRIO");
+          console.log("✅ ADICIONANDO OBJETO COMO COMENTÁRIO (formato antigo)");
           commentData.push(data);
         }
         
-        // Se tem 'sugestao', é uma sugestão
         if ('sugestao' in data && data.sugestao) {
-          console.log("✅ ADICIONANDO OBJETO COMO SUGESTÃO");
+          console.log("✅ ADICIONANDO OBJETO COMO SUGESTÃO (formato antigo)");
           sentimentData.push(data);
         }
       } else {
