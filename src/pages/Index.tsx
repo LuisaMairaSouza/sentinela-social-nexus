@@ -181,7 +181,6 @@ const Index = () => {
         throw new Error(`Erro ${response.status}: ${response.statusText}`);
       }
 
-      // Verificar se há conteúdo para fazer parse
       const responseText = await response.text();
       console.log("=== TEXTO DA RESPOSTA ===");
       console.log("Tamanho:", responseText.length);
@@ -200,135 +199,140 @@ const Index = () => {
         throw new Error("Resposta não é um JSON válido");
       }
 
-      console.log("=== DADOS RECEBIDOS DO WEBHOOK ===");
-      console.log("Tipo dos dados:", typeof data);
-      console.log("É array?", Array.isArray(data));
+      console.log("=== DADOS RECEBIDOS (ANÁLISE DE COMENTÁRIOS) ===");
       console.log("Dados completos:", JSON.stringify(data, null, 2));
       
-      // Separar dados de comentários e sugestões
+      // Processar novo formato direto de comentários
       const commentData: CommentData[] = [];
-      const sentimentData: SentimentData[] = [];
       
-      // Processar formato esperado: array com objeto contendo 'analise' e 'sugestoes'
-      if (Array.isArray(data) && data.length > 0) {
-        const firstItem = data[0];
-        console.log("=== PROCESSANDO PRIMEIRO ITEM DO ARRAY ===");
-        console.log("Primeiro item:", JSON.stringify(firstItem, null, 2));
-        
-        // Processar análises de sentimento
-        if (firstItem.analise && Array.isArray(firstItem.analise)) {
-          console.log("=== PROCESSANDO ANÁLISES ===");
-          firstItem.analise.forEach((analiseItem: any, index: number) => {
-            if (analiseItem.json && analiseItem.json.valor) {
-              const valorData = analiseItem.json.valor;
-              console.log(`✅ ANÁLISE ${index}:`, valorData);
-              
-              const commentObj: CommentData = {
-                id: `analise_${index}_${Date.now()}`,
-                classificacao: valorData.classificacao || 'neutro',
-                palavras_chaves: valorData['palavras-chave'] || valorData.palavras_chave || '',
-                tema: valorData.tema || '',
-                rede_social: valorData.rede_social || 'YouTube',
-                data_hora: new Date().toISOString()
-              };
-              commentData.push(commentObj);
-            }
-          });
-        }
-        
-        // Processar sugestões
-        if (firstItem.sugestoes && Array.isArray(firstItem.sugestoes)) {
-          console.log("=== PROCESSANDO SUGESTÕES ===");
-          firstItem.sugestoes.forEach((sugestaoItem: any, index: number) => {
-            if (sugestaoItem.json) {
-              const sugestaoData = sugestaoItem.json;
-              console.log(`✅ SUGESTÃO ${index}:`, sugestaoData);
-              
-              const sugestaoObj: SentimentData = {
-                id: sugestaoData.id ? sugestaoData.id.toString() : `sugestao_${index}_${Date.now()}`,
-                sugestao: sugestaoData.sugestao || '',
-                tema: sugestaoData.tema || 'Sem tema',
-                rede_social: sugestaoData.rede_social || 'YouTube',
-                data: sugestaoData.data || new Date().toISOString().split('T')[0]
-              };
-              sentimentData.push(sugestaoObj);
-            }
-          });
-        }
-      } else if (data && typeof data === 'object' && !Array.isArray(data)) {
-        console.log("=== PROCESSANDO OBJETO ÚNICO ===");
-        
-        // Processar análises de sentimento do objeto
-        if (data.analise && Array.isArray(data.analise)) {
-          console.log("=== PROCESSANDO ANÁLISES DO OBJETO ===");
-          data.analise.forEach((analiseItem: any, index: number) => {
-            if (analiseItem.json && analiseItem.json.valor) {
-              const valorData = analiseItem.json.valor;
-              console.log(`✅ ANÁLISE ${index}:`, valorData);
-              
-              const commentObj: CommentData = {
-                id: `analise_${index}_${Date.now()}`,
-                classificacao: valorData.classificacao || 'neutro',
-                palavras_chaves: valorData['palavras-chave'] || valorData.palavras_chave || '',
-                tema: valorData.tema || '',
-                rede_social: valorData.rede_social || 'YouTube',
-                data_hora: new Date().toISOString()
-              };
-              commentData.push(commentObj);
-            }
-          });
-        }
-        
-        // Processar sugestões do objeto
-        if (data.sugestoes && Array.isArray(data.sugestoes)) {
-          console.log("=== PROCESSANDO SUGESTÕES DO OBJETO ===");
-          data.sugestoes.forEach((sugestaoItem: any, index: number) => {
-            if (sugestaoItem.json) {
-              const sugestaoData = sugestaoItem.json;
-              console.log(`✅ SUGESTÃO ${index}:`, sugestaoData);
-              
-              const sugestaoObj: SentimentData = {
-                id: sugestaoData.id ? sugestaoData.id.toString() : `sugestao_${index}_${Date.now()}`,
-                sugestao: sugestaoData.sugestao || '',
-                tema: sugestaoData.tema || 'Sem tema',
-                rede_social: sugestaoData.rede_social || 'YouTube',
-                data: sugestaoData.data || new Date().toISOString().split('T')[0]
-              };
-              sentimentData.push(sugestaoObj);
-            }
-          });
-        }
+      if (Array.isArray(data)) {
+        data.forEach((item: any, index: number) => {
+          if (item.id && item.classificacao) {
+            console.log(`✅ COMENTÁRIO ${index}:`, item);
+            
+            const commentObj: CommentData = {
+              id: item.id,
+              classificacao: item.classificacao,
+              palavras_chaves: item.palavras_chaves || '',
+              tema: item.tema || '',
+              rede_social: item.rede_social || 'YouTube',
+              data_hora: item.data_hora || new Date().toISOString()
+            };
+            commentData.push(commentObj);
+          }
+        });
       } else {
-        console.log("❌ FORMATO DE DADOS NÃO RECONHECIDO!");
-        throw new Error("Formato de dados não reconhecido");
+        throw new Error("Formato de dados não reconhecido - esperado array de comentários");
       }
       
       console.log("=== RESULTADO FINAL ===");
       console.log("Comentários encontrados:", commentData.length);
-      console.log("Sugestões encontradas:", sentimentData.length);
       console.log("Lista de comentários:", commentData);
-      console.log("Lista de sugestões:", sentimentData);
       
-      if (commentData.length === 0 && sentimentData.length === 0) {
-        throw new Error("Nenhum dado foi encontrado no formato esperado");
+      if (commentData.length === 0) {
+        throw new Error("Nenhum comentário foi encontrado");
       }
       
-      // Processar dados, marcar plataforma e mostrar embaixo
+      // Processar dados e marcar plataforma
       setCommentData(commentData);
-      setSentimentData(sentimentData);
+      setSentimentData([]); // Limpar sugestões antigas
       setSelectedVideoTitle(video.title);
       setSelectedPlatform("youtube");
       setIsYoutubeModalOpen(false);
       
       toast({
         title: "Sucesso",
-        description: `Análise carregada! ${commentData.length} comentários e ${sentimentData.length} sugestões encontrados.`,
+        description: `Análise carregada! ${commentData.length} comentários analisados.`,
       });
     } catch (error) {
       console.error("Erro ao enviar dados do vídeo:", error);
       toast({
         title: "Erro",
         description: error instanceof Error ? error.message : "Falha ao carregar dados do vídeo.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSuggestionsClick = async () => {
+    try {
+      console.log("Buscando sugestões com API Key:", youtubeApiKey);
+      
+      const response = await fetch("https://api.teste.onlinecenter.com.br/webhook/buscar-youtube-sugestoes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({
+          apiKey: youtubeApiKey.trim()
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Erro na resposta:", errorText);
+        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+      }
+
+      const responseText = await response.text();
+      if (!responseText || responseText.trim() === '') {
+        throw new Error("Resposta vazia do servidor");
+      }
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error("Erro ao fazer parse do JSON:", parseError);
+        throw new Error("Resposta não é um JSON válido");
+      }
+
+      console.log("=== DADOS RECEBIDOS (SUGESTÕES) ===");
+      console.log("Dados completos:", JSON.stringify(data, null, 2));
+      
+      // Processar sugestões
+      const sentimentData: SentimentData[] = [];
+      
+      if (Array.isArray(data)) {
+        data.forEach((item: any, index: number) => {
+          if (item.id && item.sugestao) {
+            console.log(`✅ SUGESTÃO ${index}:`, item);
+            
+            const sugestaoObj: SentimentData = {
+              id: item.id.toString(),
+              sugestao: item.sugestao,
+              tema: item.tema || 'Sem tema',
+              rede_social: item.rede_social || 'YouTube',
+              data: item.data || new Date().toISOString().split('T')[0]
+            };
+            sentimentData.push(sugestaoObj);
+          }
+        });
+      } else {
+        throw new Error("Formato de dados não reconhecido - esperado array de sugestões");
+      }
+      
+      console.log("=== RESULTADO FINAL (SUGESTÕES) ===");
+      console.log("Sugestões encontradas:", sentimentData.length);
+      console.log("Lista de sugestões:", sentimentData);
+      
+      if (sentimentData.length === 0) {
+        throw new Error("Nenhuma sugestão foi encontrada");
+      }
+      
+      // Atualizar apenas as sugestões
+      setSentimentData(sentimentData);
+      
+      toast({
+        title: "Sucesso",
+        description: `${sentimentData.length} sugestões carregadas!`,
+      });
+    } catch (error) {
+      console.error("Erro ao buscar sugestões:", error);
+      toast({
+        title: "Erro",
+        description: error instanceof Error ? error.message : "Falha ao carregar sugestões.",
         variant: "destructive",
       });
     }
@@ -643,7 +647,16 @@ const Index = () => {
 
                 {/* Sugestões */}
                 <div className="space-y-4">
-                  <h3 className="text-xl font-semibold">Sugestões por Tema</h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xl font-semibold">Sugestões por Tema</h3>
+                    <Button 
+                      onClick={handleSuggestionsClick}
+                      className="bg-primary hover:bg-primary/90"
+                      size="sm"
+                    >
+                      Sugestões
+                    </Button>
+                  </div>
                   <div className="p-4 border border-border rounded-lg bg-card">
                     <h4 className="font-medium mb-2 text-primary">Status das Sugestões</h4>
                     <p className="text-sm text-muted-foreground mb-2">
