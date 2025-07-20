@@ -181,20 +181,36 @@ const Index = () => {
       console.log("=== DADOS RECEBIDOS DO WEBHOOK ===");
       console.log("Tipo dos dados:", typeof data);
       console.log("É array?", Array.isArray(data));
-      console.log("Dados completos:", JSON.stringify(data, null, 2));
+      console.log("Dados completos:", data);
       
       // Separar dados de comentários e sugestões
       const commentData: CommentData[] = [];
       const sentimentData: SentimentData[] = [];
       
-      if (Array.isArray(data)) {
+      // Verificar se recebemos dois arrays separados (análise de sentimento + sugestões)
+      if (Array.isArray(data) && data.length === 2 && Array.isArray(data[0]) && Array.isArray(data[1])) {
+        console.log("=== PROCESSANDO DOIS ARRAYS SEPARADOS ===");
+        console.log("Array 1 (análise de sentimento):", data[0]);
+        console.log("Array 2 (sugestões):", data[1]);
+        
+        // Primeiro array: análise de sentimentos (tem 'classificacao')
+        data[0].forEach((item: any, index: number) => {
+          console.log(`✅ COMENTÁRIO ${index}:`, item);
+          commentData.push(item);
+        });
+        
+        // Segundo array: sugestões (tem 'sugestao')
+        data[1].forEach((item: any, index: number) => {
+          console.log(`✅ SUGESTÃO ${index}:`, item);
+          sentimentData.push(item);
+        });
+      } else if (Array.isArray(data)) {
+        // Se for um array único, processar item por item
         console.log("=== PROCESSANDO ARRAY ÚNICO DE", data.length, "ITENS ===");
         
         data.forEach((item, index) => {
           console.log(`--- Item ${index} ---`);
-          console.log("Item completo:", JSON.stringify(item, null, 2));
-          console.log("Tem classificacao?", 'classificacao' in item, "Valor:", item.classificacao);
-          console.log("Tem sugestao?", 'sugestao' in item, "Valor:", item.sugestao);
+          console.log("Item completo:", item);
           
           // Se tem 'classificacao', é um comentário
           if ('classificacao' in item && item.classificacao) {
@@ -208,31 +224,6 @@ const Index = () => {
             sentimentData.push(item);
           }
         });
-      } else if (data && Array.isArray(data[0]) && Array.isArray(data[1])) {
-        // Se chegaram dois arrays separados
-        console.log("=== PROCESSANDO DOIS ARRAYS SEPARADOS ===");
-        console.log("Array 1 (análise de sentimento):", data[0]);
-        console.log("Array 2 (sugestões):", data[1]);
-        
-        // Primeiro array: análise de sentimentos
-        if (Array.isArray(data[0])) {
-          data[0].forEach((item: any, index: number) => {
-            if ('classificacao' in item) {
-              console.log(`✅ COMENTÁRIO ${index}:`, item);
-              commentData.push(item);
-            }
-          });
-        }
-        
-        // Segundo array: sugestões
-        if (Array.isArray(data[1])) {
-          data[1].forEach((item: any, index: number) => {
-            if ('sugestao' in item) {
-              console.log(`✅ SUGESTÃO ${index}:`, item);
-              sentimentData.push(item);
-            }
-          });
-        }
       } else {
         console.log("❌ FORMATO DE DADOS NÃO RECONHECIDO!");
       }
