@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { Youtube, BarChart3, Search, Loader2, Play, BarChart, PieChart as PieChartIcon, Calendar } from "lucide-react";
+import { Youtube, BarChart3, Search, Loader2, Play, BarChart, PieChart as PieChartIcon, Calendar, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart as RechartsBarChart, Bar, XAxis, YAxis } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart as RechartsBarChart, Bar, XAxis, YAxis, LineChart, Line, CartesianGrid } from "recharts";
 
 interface Video {
   title: string;
@@ -30,6 +30,12 @@ interface SentimentData {
   data: string;
 }
 
+interface AnalyticsData {
+  day: string;
+  views: number;
+  estimatedMinutesWatched: number;
+}
+
 const Index = () => {
   const [youtubeApiKey, setYoutubeApiKey] = useState("");
   const [youtubeChannelId, setYoutubeChannelId] = useState("");
@@ -47,6 +53,8 @@ const Index = () => {
   const [selectedVideoTitle, setSelectedVideoTitle] = useState("");
   const [selectedVideoId, setSelectedVideoId] = useState("");
   const [chartType, setChartType] = useState<"pie" | "bar">("pie");
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData[]>([]);
+  const [analyticsChartType, setAnalyticsChartType] = useState<"line">("line");
   const { toast } = useToast();
 
   const handleYoutubeSearch = async () => {
@@ -408,12 +416,31 @@ const Index = () => {
       const data = await response.json();
       console.log("Dados de analytics recebidos:", data);
       
+      // Processar dados do analytics
+      const processedData: AnalyticsData[] = [];
+      
+      if (Array.isArray(data) && data.length > 0) {
+        const analyticsResult = data[0];
+        if (analyticsResult.rows && Array.isArray(analyticsResult.rows)) {
+          analyticsResult.rows.forEach((row: any[]) => {
+            if (row.length >= 3) {
+              processedData.push({
+                day: row[0],
+                views: row[1] || 0,
+                estimatedMinutesWatched: row[2] || 0
+              });
+            }
+          });
+        }
+      }
+      
+      setAnalyticsData(processedData);
       setSelectedPlatform("analytics");
       setIsAnalyticsModalOpen(false);
       
       toast({
         title: "Sucesso",
-        description: "Analytics carregados com sucesso!",
+        description: `Analytics carregados! ${processedData.length} dias de dados.`,
       });
     } catch (error) {
       console.error("Erro ao buscar analytics:", error);
@@ -708,91 +735,163 @@ const Index = () => {
           </div>
 
           {/* Seção de Análise - embaixo dos ícones */}
-          {selectedPlatform && (commentData.length > 0 || sentimentData.length > 0) && (
+          {selectedPlatform && (commentData.length > 0 || sentimentData.length > 0 || analyticsData.length > 0) && (
             <div className="mt-8 space-y-6 animate-fade-in">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold mb-2">{selectedVideoTitle}</h2>
-                <h3 className="text-xl font-semibold mb-2">Análise de Sentimentos</h3>
-                <p className="text-muted-foreground">
-                  Classificação de {commentData.length} comentários analisados
-                </p>
-              </div>
+              {selectedPlatform === "analytics" && analyticsData.length > 0 ? (
+                <div className="text-center">
+                  <h2 className="text-2xl font-bold mb-2">Visualizações por Conteúdo</h2>
+                  <p className="text-muted-foreground">
+                    Analytics do canal - {analyticsData.length} dias de dados
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <h2 className="text-2xl font-bold mb-2">{selectedVideoTitle}</h2>
+                  <h3 className="text-xl font-semibold mb-2">Análise de Sentimentos</h3>
+                  <p className="text-muted-foreground">
+                    Classificação de {commentData.length} comentários analisados
+                  </p>
+                </div>
+              )}
               
-              <div className="grid lg:grid-cols-2 gap-8">
-                {/* Gráfico */}
-                <div className="space-y-4">
+              {selectedPlatform === "analytics" && analyticsData.length > 0 ? (
+                <div className="space-y-6 col-span-2">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">Análise de Sentimentos</h3>
+                    <h3 className="text-lg font-semibold">Visualizações por Conteúdo</h3>
                     <div className="flex gap-2">
                       <Button
-                        variant={chartType === "pie" ? "default" : "outline"}
+                        variant="default"
                         size="sm"
-                        onClick={() => setChartType("pie")}
                         className="flex items-center gap-2"
                       >
-                        <PieChartIcon className="h-4 w-4" />
-                        Pizza
+                        <TrendingUp className="h-4 w-4" />
+                        Gráfico de linhas
                       </Button>
                       <Button
-                        variant={chartType === "bar" ? "default" : "outline"}
+                        variant="outline"
                         size="sm"
-                        onClick={() => setChartType("bar")}
                         className="flex items-center gap-2"
                       >
-                        <BarChart className="h-4 w-4" />
-                        Barras
+                        Diária
                       </Button>
                     </div>
                   </div>
                   <div className="h-80 bg-card rounded-lg p-4 border border-border">
                     <ResponsiveContainer width="100%" height="100%">
-                      {chartType === "pie" ? (
-                        <PieChart>
-                          <Pie
-                            data={getChartData()}
-                            cx="50%"
-                            cy="50%"
-                            outerRadius={80}
-                            dataKey="value"
-                          >
-                            {getChartData().map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip />
-                          <Legend />
-                        </PieChart>
-                      ) : (
-                        <RechartsBarChart data={getChartData()}>
-                          <XAxis dataKey="name" />
-                          <YAxis />
-                          <Tooltip />
-                          <Legend />
-                          <Bar dataKey="value" fill="#8884d8">
-                            {getChartData().map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Bar>
-                        </RechartsBarChart>
-                      )}
+                      <LineChart data={analyticsData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis 
+                          dataKey="day" 
+                          tick={{ fontSize: 12 }}
+                          tickFormatter={(value) => {
+                            const date = new Date(value);
+                            return `${date.getDate()}/${date.getMonth() + 1}`;
+                          }}
+                        />
+                        <YAxis tick={{ fontSize: 12 }} />
+                        <Tooltip 
+                          labelFormatter={(value) => {
+                            const date = new Date(value);
+                            return `${date.getDate()} de ${date.toLocaleString('pt-BR', { month: 'long' })} de ${date.getFullYear()}`;
+                          }}
+                        />
+                        <Legend />
+                        <Line 
+                          type="monotone" 
+                          dataKey="views" 
+                          stroke="#3b82f6" 
+                          strokeWidth={2}
+                          name="Visualizações"
+                          dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="estimatedMinutesWatched" 
+                          stroke="#10b981" 
+                          strokeWidth={2}
+                          name="Minutos Assistidos"
+                          dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
+                        />
+                      </LineChart>
                     </ResponsiveContainer>
                   </div>
-
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    {getChartData().map((item) => (
-                      <div key={item.name} className="p-4 border border-border rounded-lg bg-card">
-                        <div className="flex items-center justify-center gap-2 mb-2">
-                          <div 
-                            className="w-3 h-3 rounded-full" 
-                            style={{ backgroundColor: item.color }}
-                          />
-                          <span className="font-medium">{item.name}</span>
-                        </div>
-                        <p className="text-2xl font-bold">{item.value}</p>
-                      </div>
-                    ))}
-                  </div>
                 </div>
+              ) : (
+                <div className="grid lg:grid-cols-2 gap-8">
+                  {/* Gráfico */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold">Análise de Sentimentos</h3>
+                      <div className="flex gap-2">
+                        <Button
+                          variant={chartType === "pie" ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setChartType("pie")}
+                          className="flex items-center gap-2"
+                        >
+                          <PieChartIcon className="h-4 w-4" />
+                          Pizza
+                        </Button>
+                        <Button
+                          variant={chartType === "bar" ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setChartType("bar")}
+                          className="flex items-center gap-2"
+                        >
+                          <BarChart className="h-4 w-4" />
+                          Barras
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="h-80 bg-card rounded-lg p-4 border border-border">
+                      <ResponsiveContainer width="100%" height="100%">
+                        {chartType === "pie" ? (
+                          <PieChart>
+                            <Pie
+                              data={getChartData()}
+                              cx="50%"
+                              cy="50%"
+                              outerRadius={80}
+                              dataKey="value"
+                            >
+                              {getChartData().map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                              ))}
+                            </Pie>
+                            <Tooltip />
+                            <Legend />
+                          </PieChart>
+                        ) : (
+                          <RechartsBarChart data={getChartData()}>
+                            <XAxis dataKey="name" />
+                            <YAxis />
+                            <Tooltip />
+                            <Legend />
+                            <Bar dataKey="value" fill="#8884d8">
+                              {getChartData().map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                              ))}
+                            </Bar>
+                          </RechartsBarChart>
+                        )}
+                      </ResponsiveContainer>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      {getChartData().map((item) => (
+                        <div key={item.name} className="p-4 border border-border rounded-lg bg-card">
+                          <div className="flex items-center justify-center gap-2 mb-2">
+                            <div 
+                              className="w-3 h-3 rounded-full" 
+                              style={{ backgroundColor: item.color }}
+                            />
+                            <span className="font-medium">{item.name}</span>
+                          </div>
+                          <p className="text-2xl font-bold">{item.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
                 {/* Sugestões */}
                 <div className="space-y-4">
@@ -829,8 +928,9 @@ const Index = () => {
                       </p>
                     </div>
                   )}
+                 </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
         </div>
