@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Youtube, BarChart3, Twitter, Search, Loader2, Play, BarChart, PieChart as PieChartIcon } from "lucide-react";
+import { Youtube, BarChart3, Search, Loader2, Play, BarChart, PieChart as PieChartIcon, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -39,8 +39,9 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isYoutubeModalOpen, setIsYoutubeModalOpen] = useState(false);
   const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
-  const [isTwitterModalOpen, setIsTwitterModalOpen] = useState(false);
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
+  const [analyticsStartDate, setAnalyticsStartDate] = useState("");
+  const [analyticsEndDate, setAnalyticsEndDate] = useState("");
   const [commentData, setCommentData] = useState<CommentData[]>([]);
   const [sentimentData, setSentimentData] = useState<SentimentData[]>([]);
   const [selectedVideoTitle, setSelectedVideoTitle] = useState("");
@@ -365,6 +366,67 @@ const Index = () => {
     ];
   };
 
+  const handleAnalyticsSearch = async () => {
+    if (!youtubeApiKey.trim()) {
+      toast({
+        title: "Erro",
+        description: "Por favor, insira uma API key válida.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!analyticsStartDate || !analyticsEndDate) {
+      toast({
+        title: "Erro",
+        description: "Por favor, selecione as datas de início e fim.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch("https://api.teste.onlinecenter.com.br/webhook/buscar-youtube-analytics", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          apiKey: youtubeApiKey.trim(),
+          data_inicio: analyticsStartDate,
+          data_final: analyticsEndDate
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Erro na resposta:", errorText);
+        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log("Dados de analytics recebidos:", data);
+      
+      setSelectedPlatform("analytics");
+      setIsAnalyticsModalOpen(false);
+      
+      toast({
+        title: "Sucesso",
+        description: "Analytics carregados com sucesso!",
+      });
+    } catch (error) {
+      console.error("Erro ao buscar analytics:", error);
+      toast({
+        title: "Erro",
+        description: error instanceof Error ? error.message : "Falha ao carregar analytics.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const getSuggestionsByTheme = () => {
     console.log("=== PROCESSANDO SUGESTÕES ===");
     console.log("sentimentData:", sentimentData);
@@ -409,7 +471,7 @@ const Index = () => {
           </div>
 
           {/* Cards das Ferramentas */}
-          <div className="grid md:grid-cols-3 gap-6 mb-8">
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
             {/* YouTube Card */}
             <Dialog open={isYoutubeModalOpen} onOpenChange={setIsYoutubeModalOpen}>
               <DialogTrigger asChild>
@@ -538,50 +600,37 @@ const Index = () => {
               </DialogContent>
             </Dialog>
 
-            {/* Analytics Card - desabilitado */}
-            <div className={`card-modern rounded-lg p-6 cursor-pointer hover:shadow-lg transition-all duration-200 opacity-50`}>
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className="p-4 bg-blue-500/10 rounded-full">
-                  <BarChart3 className="h-8 w-8 text-blue-500" />
-                </div>
-                <h3 className="text-xl font-semibold">Analytics</h3>
-                <p className="text-sm text-muted-foreground">
-                  Análise estatística de dados
-                </p>
-              </div>
-            </div>
-
-            {/* Twitter/X Card */}
-            <Dialog open={isTwitterModalOpen} onOpenChange={setIsTwitterModalOpen}>
+            {/* Analytics Card */}
+            <Dialog open={isAnalyticsModalOpen} onOpenChange={setIsAnalyticsModalOpen}>
               <DialogTrigger asChild>
                 <div className={`card-modern rounded-lg p-6 cursor-pointer transition-all duration-200 relative ${
-                  selectedPlatform === 'twitter' 
-                    ? 'ring-4 ring-gray-500 bg-gray-500/10 shadow-lg shadow-gray-500/25 scale-105' 
+                  selectedPlatform === 'analytics' 
+                    ? 'ring-4 ring-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/25 scale-105' 
                     : 'hover:shadow-lg'
                 }`}>
-                  {selectedPlatform === 'twitter' && (
-                    <div className="absolute -top-2 -right-2 bg-gray-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold animate-pulse">
+                  {selectedPlatform === 'analytics' && (
+                    <div className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold animate-pulse">
                       ✓
                     </div>
                   )}
                   <div className="flex flex-col items-center text-center space-y-4">
                     <div className={`p-4 rounded-full transition-all duration-200 ${
-                      selectedPlatform === 'twitter' 
-                        ? 'bg-gray-500/30 shadow-lg' 
-                        : 'bg-gray-500/10'
+                      selectedPlatform === 'analytics' 
+                        ? 'bg-blue-500/30 shadow-lg' 
+                        : 'bg-blue-500/10'
                     }`}>
-                      <Twitter className={`h-8 w-8 transition-all duration-200 ${
-                        selectedPlatform === 'twitter' ? 'text-gray-600 scale-110' : 'text-gray-400'
+                      <BarChart3 className={`h-8 w-8 transition-all duration-200 ${
+                        selectedPlatform === 'analytics' ? 'text-blue-600 scale-110' : 'text-blue-500'
                       }`} />
                     </div>
                     <h3 className={`text-xl font-semibold ${
-                      selectedPlatform === 'twitter' ? 'text-gray-600' : ''
-                    }`}>X (Twitter)</h3>
+                      selectedPlatform === 'analytics' ? 'text-blue-600' : ''
+                    }`}>Analytics</h3>
                     <p className="text-sm text-muted-foreground">
-                      Análise de posts e perfis
+                      Análise estatística de dados
                     </p>
-                    {selectedPlatform === 'twitter' && (
-                      <div className="text-xs text-gray-600 font-medium">
+                    {selectedPlatform === 'analytics' && (
+                      <div className="text-xs text-blue-600 font-medium">
                         ● ANALISANDO
                       </div>
                     )}
@@ -591,21 +640,71 @@ const Index = () => {
               <DialogContent className="sm:max-w-2xl card-modern">
                 <DialogHeader>
                   <DialogTitle className="text-xl flex items-center gap-2">
-                    <Twitter className="h-5 w-5 text-gray-400" />
-                    Análise X (Twitter)
+                    <BarChart3 className="h-5 w-5 text-blue-500" />
+                    YouTube Analytics
                   </DialogTitle>
                 </DialogHeader>
-                <div className="p-8 text-center">
-                  <div className="space-y-4">
-                    <Twitter className="h-16 w-16 text-muted-foreground mx-auto" />
-                    <h3 className="text-lg font-semibold">Em Desenvolvimento</h3>
-                    <p className="text-muted-foreground">
-                      Esta funcionalidade está sendo desenvolvida e estará disponível em breve.
-                    </p>
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="analyticsApiKey">API Key do YouTube</Label>
+                    <Input
+                      id="analyticsApiKey"
+                      placeholder="Digite sua API key do YouTube"
+                      value={youtubeApiKey}
+                      onChange={(e) => setYoutubeApiKey(e.target.value)}
+                      className="bg-input border-border"
+                      type="password"
+                    />
                   </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="startDate">Data de Início</Label>
+                      <div className="relative">
+                        <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="startDate"
+                          type="date"
+                          value={analyticsStartDate}
+                          onChange={(e) => setAnalyticsStartDate(e.target.value)}
+                          className="pl-10 bg-input border-border"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="endDate">Data Final</Label>
+                      <div className="relative">
+                        <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="endDate"
+                          type="date"
+                          value={analyticsEndDate}
+                          onChange={(e) => setAnalyticsEndDate(e.target.value)}
+                          className="pl-10 bg-input border-border"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button 
+                    onClick={handleAnalyticsSearch} 
+                    disabled={isLoading || !youtubeApiKey.trim() || !analyticsStartDate || !analyticsEndDate}
+                    className="w-full bg-primary hover:bg-primary/90"
+                  >
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <>
+                        <BarChart3 className="h-4 w-4 mr-2" />
+                        Buscar Analytics
+                      </>
+                    )}
+                  </Button>
                 </div>
               </DialogContent>
             </Dialog>
+
           </div>
 
           {/* Seção de Análise - embaixo dos ícones */}
