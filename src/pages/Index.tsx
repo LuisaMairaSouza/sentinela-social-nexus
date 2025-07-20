@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { Youtube, BarChart3, Twitter, Search, Loader2, Play } from "lucide-react";
+import { Youtube, BarChart3, Twitter, Search, Loader2, Play, BarChart, PieChart as PieChartIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart as RechartsBarChart, Bar, XAxis, YAxis } from "recharts";
 
 interface Video {
   title: string;
@@ -45,6 +45,7 @@ const Index = () => {
   const [sentimentData, setSentimentData] = useState<SentimentData[]>([]);
   const [selectedVideoTitle, setSelectedVideoTitle] = useState("");
   const [selectedVideoId, setSelectedVideoId] = useState("");
+  const [chartType, setChartType] = useState<"pie" | "bar">("pie");
   const { toast } = useToast();
 
   const handleYoutubeSearch = async () => {
@@ -621,23 +622,60 @@ const Index = () => {
               <div className="grid lg:grid-cols-2 gap-8">
                 {/* Gráfico */}
                 <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">Análise de Sentimentos</h3>
+                    <div className="flex gap-2">
+                      <Button
+                        variant={chartType === "pie" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setChartType("pie")}
+                        className="flex items-center gap-2"
+                      >
+                        <PieChartIcon className="h-4 w-4" />
+                        Pizza
+                      </Button>
+                      <Button
+                        variant={chartType === "bar" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setChartType("bar")}
+                        className="flex items-center gap-2"
+                      >
+                        <BarChart className="h-4 w-4" />
+                        Barras
+                      </Button>
+                    </div>
+                  </div>
                   <div className="h-80 bg-card rounded-lg p-4 border border-border">
                     <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={getChartData()}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={80}
-                          dataKey="value"
-                        >
-                          {getChartData().map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                        <Legend />
-                      </PieChart>
+                      {chartType === "pie" ? (
+                        <PieChart>
+                          <Pie
+                            data={getChartData()}
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={80}
+                            dataKey="value"
+                          >
+                            {getChartData().map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                          <Legend />
+                        </PieChart>
+                      ) : (
+                        <RechartsBarChart data={getChartData()}>
+                          <XAxis dataKey="name" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Bar dataKey="value" fill="#8884d8">
+                            {getChartData().map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Bar>
+                        </RechartsBarChart>
+                      )}
                     </ResponsiveContainer>
                   </div>
 
@@ -669,19 +707,8 @@ const Index = () => {
                       Sugestões
                     </Button>
                   </div>
-                  <div className="p-4 border border-border rounded-lg bg-card">
-                    <h4 className="font-medium mb-2 text-primary">Status das Sugestões</h4>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Total de itens de sentimento: {sentimentData.length}
-                    </p>
-                    {sentimentData.map((item, index) => (
-                      <div key={index} className="text-xs text-muted-foreground mb-1">
-                        Item {index}: Sugestão="{item.sugestao}" | Tema="{item.tema}"
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {sentimentData.length > 0 ? (
+                   
+                   {sentimentData.length > 0 ? (
                     <div className="space-y-3 max-h-96 overflow-y-auto">
                       {Object.entries(getSuggestionsByTheme()).map(([theme, suggestions]) => (
                         <div key={theme} className="p-4 border border-border rounded-lg bg-card">
