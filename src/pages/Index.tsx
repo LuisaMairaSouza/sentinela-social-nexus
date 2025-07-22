@@ -21,6 +21,8 @@ interface CommentData {
   tema: string;
   rede_social: string;
   data_hora: string;
+  autor_comentario?: string;
+  comentario?: string;
 }
 
 interface SentimentData {
@@ -70,6 +72,8 @@ const Index = () => {
   const [newChannelName, setNewChannelName] = useState("");
   const [newChannelApiKey, setNewChannelApiKey] = useState("");
   const [newChannelId, setNewChannelId] = useState("");
+  const [showComments, setShowComments] = useState(false);
+  const [selectedSentiment, setSelectedSentiment] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Carregar canais do localStorage
@@ -342,7 +346,9 @@ const Index = () => {
               palavras_chaves: item.palavras_chaves || '',
               tema: item.tema || '',
               rede_social: item.rede_social || 'YouTube',
-              data_hora: item.data_hora || new Date().toISOString()
+              data_hora: item.data_hora || new Date().toISOString(),
+              autor_comentario: item.autor_comentario || '',
+              comentario: item.comentario || ''
             };
             commentData.push(commentObj);
           }
@@ -586,6 +592,17 @@ const Index = () => {
     
     console.log("Sugestões agrupadas:", grouped);
     return grouped;
+  };
+
+  const getCommentsBySentiment = (sentiment: string) => {
+    return commentData.filter(comment => 
+      comment.classificacao?.toLowerCase() === sentiment.toLowerCase()
+    );
+  };
+
+  const handleShowComments = () => {
+    setShowComments(!showComments);
+    setSelectedSentiment(null); // Reset the sentiment filter when toggling
   };
 
   return (
@@ -1158,17 +1175,26 @@ const Index = () => {
                     </div>
                   </div>
 
-                {/* Sugestões */}
+                 {/* Sugestões */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-xl font-semibold">Sugestões por Tema</h3>
-                    <Button 
-                      onClick={handleSuggestionsClick}
-                      className="bg-primary hover:bg-primary/90"
-                      size="sm"
-                    >
-                      Sugestões
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={handleShowComments}
+                        className="bg-blue-500 hover:bg-blue-600"
+                        size="sm"
+                      >
+                        {showComments ? "Ocultar Comentários" : "Ver Comentários"}
+                      </Button>
+                      <Button 
+                        onClick={handleSuggestionsClick}
+                        className="bg-primary hover:bg-primary/90"
+                        size="sm"
+                      >
+                        Sugestões
+                      </Button>
+                    </div>
                   </div>
                    
                    {sentimentData.length > 0 ? (
@@ -1191,6 +1217,93 @@ const Index = () => {
                       <p className="text-muted-foreground">
                         Nenhuma sugestão encontrada para este vídeo.
                       </p>
+                    </div>
+                  )}
+                  
+                  {/* Comentários por Sentimento */}
+                  {showComments && commentData.length > 0 && (
+                    <div className="mt-6 space-y-4">
+                      <div className="flex items-center justify-center gap-2 mb-4">
+                        <Button
+                          onClick={() => setSelectedSentiment(selectedSentiment === 'positivo' ? null : 'positivo')}
+                          variant={selectedSentiment === 'positivo' ? "default" : "outline"}
+                          className="flex items-center gap-2"
+                          size="sm"
+                        >
+                          <div className="w-3 h-3 rounded-full bg-green-500" />
+                          Positivos ({getCommentsBySentiment('positivo').length})
+                        </Button>
+                        <Button
+                          onClick={() => setSelectedSentiment(selectedSentiment === 'negativo' ? null : 'negativo')}
+                          variant={selectedSentiment === 'negativo' ? "default" : "outline"}
+                          className="flex items-center gap-2"
+                          size="sm"
+                        >
+                          <div className="w-3 h-3 rounded-full bg-red-500" />
+                          Negativos ({getCommentsBySentiment('negativo').length})
+                        </Button>
+                        <Button
+                          onClick={() => setSelectedSentiment(selectedSentiment === 'neutro' ? null : 'neutro')}
+                          variant={selectedSentiment === 'neutro' ? "default" : "outline"}
+                          className="flex items-center gap-2"
+                          size="sm"
+                        >
+                          <div className="w-3 h-3 rounded-full bg-gray-500" />
+                          Neutros ({getCommentsBySentiment('neutro').length})
+                        </Button>
+                      </div>
+                      
+                      {selectedSentiment && (
+                        <div className="space-y-3 max-h-80 overflow-y-auto">
+                          <h4 className="font-medium text-lg text-center">
+                            Comentários {selectedSentiment === 'positivo' ? 'Positivos' : selectedSentiment === 'negativo' ? 'Negativos' : 'Neutros'}
+                          </h4>
+                          {getCommentsBySentiment(selectedSentiment).map((comment, index) => (
+                            <div key={comment.id || index} className="p-4 border border-border rounded-lg bg-card">
+                              <div className="flex items-start gap-3">
+                                <div 
+                                  className={`w-3 h-3 rounded-full mt-1 ${
+                                    selectedSentiment === 'positivo' ? 'bg-green-500' : 
+                                    selectedSentiment === 'negativo' ? 'bg-red-500' : 'bg-gray-500'
+                                  }`}
+                                />
+                                <div className="flex-1">
+                                  <p className="font-medium text-sm text-primary mb-1">
+                                    {comment.comentario || 'Autor desconhecido'}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {comment.autor_comentario || 'Comentário não disponível'}
+                                  </p>
+                                  {comment.data_hora && (
+                                    <p className="text-xs text-muted-foreground mt-2">
+                                      {new Date(comment.data_hora).toLocaleDateString('pt-BR', {
+                                        day: '2-digit',
+                                        month: '2-digit',
+                                        year: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      })}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          {getCommentsBySentiment(selectedSentiment).length === 0 && (
+                            <div className="text-center p-4 text-muted-foreground">
+                              Nenhum comentário {selectedSentiment} encontrado.
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
+                      {!selectedSentiment && (
+                        <div className="text-center p-4 border border-dashed border-border rounded-lg bg-card/50">
+                          <p className="text-muted-foreground">
+                            Selecione um tipo de sentimento para ver os comentários.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   )}
                  </div>
