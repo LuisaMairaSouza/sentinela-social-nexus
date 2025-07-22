@@ -11,6 +11,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart as 
 interface Video {
   title: string;
   id_video: string;
+  thumbnail?: string;
 }
 
 interface CommentData {
@@ -861,12 +862,21 @@ const Index = () => {
                                     className="w-full p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors bg-card cursor-pointer"
                                     onClick={() => handleVideoClick(video)}
                                   >
-                                    <div className="flex items-start gap-3">
-                                      <Play className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium leading-relaxed break-words line-clamp-3">
-                                          {video.title}
-                                        </p>
+                                    <div className="flex items-start gap-4">
+                                      <div className="flex-shrink-0">
+                                        <img
+                                          src={video.thumbnail || 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=120&h=90&fit=crop'}
+                                          alt={video.title}
+                                          className="w-20 h-15 object-cover rounded"
+                                        />
+                                      </div>
+                                      <div className="flex items-start gap-2 flex-1 min-w-0">
+                                        <Play className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-sm font-medium leading-relaxed break-words line-clamp-3">
+                                            {video.title}
+                                          </p>
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
