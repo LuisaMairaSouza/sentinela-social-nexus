@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Youtube, BarChart3, Search, Loader2, Play, BarChart, PieChart as PieChartIcon, Calendar, TrendingUp } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Youtube, BarChart3, Search, Loader2, Play, BarChart, PieChart as PieChartIcon, Calendar, TrendingUp, Plus, Settings, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -36,6 +36,14 @@ interface AnalyticsData {
   estimatedMinutesWatched: number;
 }
 
+interface Channel {
+  id: string;
+  name: string;
+  apiKey: string;
+  channelId: string;
+  createdAt: string;
+}
+
 const Index = () => {
   const [youtubeApiKey, setYoutubeApiKey] = useState("");
   const [youtubeChannelId, setYoutubeChannelId] = useState("");
@@ -55,7 +63,113 @@ const Index = () => {
   const [chartType, setChartType] = useState<"pie" | "bar">("pie");
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData[]>([]);
   const [analyticsChartType, setAnalyticsChartType] = useState<"line">("line");
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
+  const [isChannelFormOpen, setIsChannelFormOpen] = useState(false);
+  const [newChannelName, setNewChannelName] = useState("");
+  const [newChannelApiKey, setNewChannelApiKey] = useState("");
+  const [newChannelId, setNewChannelId] = useState("");
   const { toast } = useToast();
+
+  // Carregar canais do localStorage
+  useEffect(() => {
+    const savedChannels = localStorage.getItem('youtube-channels');
+    if (savedChannels) {
+      const parsedChannels = JSON.parse(savedChannels);
+      setChannels(parsedChannels);
+      // Se houver canais salvos, selecionar o primeiro automaticamente
+      if (parsedChannels.length > 0) {
+        setSelectedChannel(parsedChannels[0]);
+        setYoutubeApiKey(parsedChannels[0].apiKey);
+        setYoutubeChannelId(parsedChannels[0].channelId);
+      }
+    }
+  }, []);
+
+  // Salvar canais no localStorage
+  const saveChannelsToStorage = (channelsToSave: Channel[]) => {
+    localStorage.setItem('youtube-channels', JSON.stringify(channelsToSave));
+  };
+
+  // Cadastrar novo canal
+  const handleAddChannel = () => {
+    if (!newChannelName.trim() || !newChannelApiKey.trim() || !newChannelId.trim()) {
+      toast({
+        title: "Erro",
+        description: "Preencha todos os campos para cadastrar o canal.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newChannel: Channel = {
+      id: Date.now().toString(),
+      name: newChannelName.trim(),
+      apiKey: newChannelApiKey.trim(),
+      channelId: newChannelId.trim(),
+      createdAt: new Date().toISOString()
+    };
+
+    const updatedChannels = [...channels, newChannel];
+    setChannels(updatedChannels);
+    saveChannelsToStorage(updatedChannels);
+
+    // Limpar formulário
+    setNewChannelName("");
+    setNewChannelApiKey("");
+    setNewChannelId("");
+    setIsChannelFormOpen(false);
+
+    toast({
+      title: "Sucesso",
+      description: "Canal cadastrado com sucesso!",
+    });
+  };
+
+  // Selecionar canal
+  const handleSelectChannel = (channel: Channel) => {
+    setSelectedChannel(channel);
+    setYoutubeApiKey(channel.apiKey);
+    setYoutubeChannelId(channel.channelId);
+    
+    // Limpar dados anteriores
+    setVideos([]);
+    setFilteredVideos([]);
+    setCommentData([]);
+    setSentimentData([]);
+    setAnalyticsData([]);
+    setSelectedPlatform(null);
+
+    toast({
+      title: "Canal Selecionado",
+      description: `Agora usando o canal: ${channel.name}`,
+    });
+  };
+
+  // Excluir canal
+  const handleDeleteChannel = (channelId: string) => {
+    const updatedChannels = channels.filter(channel => channel.id !== channelId);
+    setChannels(updatedChannels);
+    saveChannelsToStorage(updatedChannels);
+
+    // Se o canal excluído estava selecionado, limpar seleção
+    if (selectedChannel?.id === channelId) {
+      setSelectedChannel(null);
+      setYoutubeApiKey("");
+      setYoutubeChannelId("");
+      setVideos([]);
+      setFilteredVideos([]);
+      setCommentData([]);
+      setSentimentData([]);
+      setAnalyticsData([]);
+      setSelectedPlatform(null);
+    }
+
+    toast({
+      title: "Canal Excluído",
+      description: "Canal removido com sucesso.",
+    });
+  };
 
   const handleYoutubeSearch = async () => {
     if (!youtubeApiKey.trim()) {
@@ -490,10 +604,160 @@ const Index = () => {
       {/* Main Content */}
       <main className="container mx-auto px-6 py-12">
         <div className="max-w-4xl mx-auto">
+          {/* Seção de Canais Cadastrados */}
+          <div className="mb-12">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-semibold mb-4">Canais Cadastrados</h2>
+              <p className="text-muted-foreground">
+                Gerencie os canais para análise de comentários e estatísticas
+              </p>
+            </div>
+
+            {/* Botão para adicionar novo canal */}
+            <div className="flex justify-center mb-6">
+              <Dialog open={isChannelFormOpen} onOpenChange={setIsChannelFormOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-primary hover:bg-primary/90 flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    Cadastrar Novo Canal
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md card-modern">
+                  <DialogHeader>
+                    <DialogTitle className="text-xl flex items-center gap-2">
+                      <Youtube className="h-5 w-5 text-red-500" />
+                      Cadastrar Canal
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="channelName">Nome do Canal</Label>
+                      <Input
+                        id="channelName"
+                        placeholder="Digite o nome do canal"
+                        value={newChannelName}
+                        onChange={(e) => setNewChannelName(e.target.value)}
+                        className="bg-input border-border"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="newApiKey">API Key do YouTube</Label>
+                      <Input
+                        id="newApiKey"
+                        placeholder="Digite sua API key do YouTube"
+                        value={newChannelApiKey}
+                        onChange={(e) => setNewChannelApiKey(e.target.value)}
+                        className="bg-input border-border"
+                        type="password"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="newChannelId">ID do Canal</Label>
+                      <Input
+                        id="newChannelId"
+                        placeholder="Digite o ID do canal"
+                        value={newChannelId}
+                        onChange={(e) => setNewChannelId(e.target.value)}
+                        className="bg-input border-border"
+                      />
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={handleAddChannel}
+                        className="flex-1 bg-primary hover:bg-primary/90"
+                        disabled={!newChannelName.trim() || !newChannelApiKey.trim() || !newChannelId.trim()}
+                      >
+                        Cadastrar Canal
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setIsChannelFormOpen(false)}
+                        className="flex-1"
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            {/* Lista de canais */}
+            {channels.length > 0 ? (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {channels.map((channel) => (
+                  <div
+                    key={channel.id}
+                    className={`card-modern rounded-lg p-4 cursor-pointer transition-all duration-200 relative ${
+                      selectedChannel?.id === channel.id
+                        ? 'ring-2 ring-primary bg-primary/5 shadow-lg scale-105'
+                        : 'hover:shadow-md border border-border'
+                    }`}
+                    onClick={() => handleSelectChannel(channel)}
+                  >
+                    {selectedChannel?.id === channel.id && (
+                      <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold animate-pulse">
+                        ✓
+                      </div>
+                    )}
+                    <div className="flex flex-col space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="p-2 bg-red-500/10 rounded-full">
+                            <Youtube className="h-4 w-4 text-red-500" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-sm truncate">{channel.name}</h3>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {channel.channelId}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteChannel(channel.id);
+                          }}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Cadastrado em {new Date(channel.createdAt).toLocaleDateString('pt-BR')}
+                      </div>
+                      {selectedChannel?.id === channel.id && (
+                        <div className="text-xs text-primary font-medium">
+                          ● CANAL ATIVO
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center p-8 border border-dashed border-border rounded-lg bg-card/50">
+                <Youtube className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">Nenhum canal cadastrado</h3>
+                <p className="text-muted-foreground mb-4">
+                  Cadastre seu primeiro canal para começar a análise
+                </p>
+              </div>
+            )}
+          </div>
+
           <div className="text-center mb-12">
             <h2 className="text-2xl font-semibold mb-4">Ferramentas de Análise</h2>
             <p className="text-muted-foreground">
-              Acesse as ferramentas disponíveis para investigação em redes sociais
+              {selectedChannel 
+                ? `Analisando canal: ${selectedChannel.name}` 
+                : 'Selecione um canal para começar a análise'
+              }
             </p>
           </div>
 
@@ -502,11 +766,14 @@ const Index = () => {
             {/* YouTube Card */}
             <Dialog open={isYoutubeModalOpen} onOpenChange={setIsYoutubeModalOpen}>
               <DialogTrigger asChild>
-                <div className={`card-modern rounded-lg p-6 cursor-pointer transition-all duration-200 relative ${
-                  selectedPlatform === 'youtube' 
-                    ? 'ring-4 ring-red-500 bg-red-500/10 shadow-lg shadow-red-500/25 scale-105' 
-                    : 'hover:shadow-lg'
-                }`}>
+                <div className={`card-modern rounded-lg p-6 transition-all duration-200 relative ${
+                  !selectedChannel 
+                    ? 'opacity-50 cursor-not-allowed' 
+                    : selectedPlatform === 'youtube' 
+                      ? 'ring-4 ring-red-500 bg-red-500/10 shadow-lg shadow-red-500/25 scale-105 cursor-pointer' 
+                      : 'hover:shadow-lg cursor-pointer'
+                }`}
+                onClick={!selectedChannel ? (e) => e.preventDefault() : undefined}>
                   {selectedPlatform === 'youtube' && (
                     <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold animate-pulse">
                       ✓
@@ -630,11 +897,14 @@ const Index = () => {
             {/* Analytics Card */}
             <Dialog open={isAnalyticsModalOpen} onOpenChange={setIsAnalyticsModalOpen}>
               <DialogTrigger asChild>
-                <div className={`card-modern rounded-lg p-6 cursor-pointer transition-all duration-200 relative ${
-                  selectedPlatform === 'analytics' 
-                    ? 'ring-4 ring-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/25 scale-105' 
-                    : 'hover:shadow-lg'
-                }`}>
+                <div className={`card-modern rounded-lg p-6 transition-all duration-200 relative ${
+                  !selectedChannel 
+                    ? 'opacity-50 cursor-not-allowed' 
+                    : selectedPlatform === 'analytics' 
+                      ? 'ring-4 ring-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/25 scale-105 cursor-pointer' 
+                      : 'hover:shadow-lg cursor-pointer'
+                }`}
+                onClick={!selectedChannel ? (e) => e.preventDefault() : undefined}>
                   {selectedPlatform === 'analytics' && (
                     <div className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold animate-pulse">
                       ✓
