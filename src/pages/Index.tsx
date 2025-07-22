@@ -337,11 +337,11 @@ const Index = () => {
       
       if (Array.isArray(data)) {
         data.forEach((item: any, index: number) => {
-          if (item.classificacao && item.autor_comentario) {
+          if (item.id && item.classificacao && item.autor_comentario) {
             console.log(`✅ COMENTÁRIO ${index}:`, item);
             
             const commentObj: CommentData = {
-              id: item.id || `comment-${index}-${Date.now()}`, // Gerar ID se não existir
+              id: item.id,
               classificacao: item.classificacao,
               palavras_chaves: item.palavras_chaves || '',
               tema: item.tema || '',
