@@ -865,7 +865,7 @@ const Index = () => {
                                     <div className="flex items-start gap-4">
                                       <div className="flex-shrink-0">
                                         <img
-                                          src={video.thumbnail || 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=120&h=90&fit=crop'}
+                                          src={video.thumbnail || `https://i.ytimg.com/vi/${video.id_video}/hqdefault.jpg`}
                                           alt={video.title}
                                           className="w-20 h-15 object-cover rounded"
                                         />
