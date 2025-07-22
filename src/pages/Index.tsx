@@ -59,6 +59,7 @@ const Index = () => {
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
   const [analyticsStartDate, setAnalyticsStartDate] = useState("");
   const [analyticsEndDate, setAnalyticsEndDate] = useState("");
+  const [analyticsApiKey, setAnalyticsApiKey] = useState("");
   const [commentData, setCommentData] = useState<CommentData[]>([]);
   const [sentimentData, setSentimentData] = useState<SentimentData[]>([]);
   const [selectedVideoTitle, setSelectedVideoTitle] = useState("");
@@ -496,7 +497,7 @@ const Index = () => {
   };
 
   const handleAnalyticsSearch = async () => {
-    if (!youtubeApiKey.trim()) {
+    if (!analyticsApiKey.trim()) {
       toast({
         title: "Erro",
         description: "Por favor, insira uma API key válida.",
@@ -522,7 +523,7 @@ const Index = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          apiKey: youtubeApiKey.trim(),
+          apiKey: analyticsApiKey.trim(),
           data_inicio: analyticsStartDate,
           data_final: analyticsEndDate
         }),
@@ -622,160 +623,10 @@ const Index = () => {
       {/* Main Content */}
       <main className="container mx-auto px-6 py-12">
         <div className="max-w-4xl mx-auto">
-          {/* Seção de Canais Cadastrados */}
-          <div className="mb-12">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-semibold mb-4">Canais Cadastrados</h2>
-              <p className="text-muted-foreground">
-                Gerencie os canais para análise de comentários e estatísticas
-              </p>
-            </div>
-
-            {/* Botão para adicionar novo canal */}
-            <div className="flex justify-center mb-6">
-              <Dialog open={isChannelFormOpen} onOpenChange={setIsChannelFormOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-primary hover:bg-primary/90 flex items-center gap-2">
-                    <Plus className="h-4 w-4" />
-                    Cadastrar Novo Canal
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md card-modern">
-                  <DialogHeader>
-                    <DialogTitle className="text-xl flex items-center gap-2">
-                      <Youtube className="h-5 w-5 text-red-500" />
-                      Cadastrar Canal
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="channelName">Nome do Canal</Label>
-                      <Input
-                        id="channelName"
-                        placeholder="Digite o nome do canal"
-                        value={newChannelName}
-                        onChange={(e) => setNewChannelName(e.target.value)}
-                        className="bg-input border-border"
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="newApiKey">API Key do YouTube</Label>
-                      <Input
-                        id="newApiKey"
-                        placeholder="Digite sua API key do YouTube"
-                        value={newChannelApiKey}
-                        onChange={(e) => setNewChannelApiKey(e.target.value)}
-                        className="bg-input border-border"
-                        type="password"
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="newChannelId">ID do Canal</Label>
-                      <Input
-                        id="newChannelId"
-                        placeholder="Digite o ID do canal"
-                        value={newChannelId}
-                        onChange={(e) => setNewChannelId(e.target.value)}
-                        className="bg-input border-border"
-                      />
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button 
-                        onClick={handleAddChannel}
-                        className="flex-1 bg-primary hover:bg-primary/90"
-                        disabled={!newChannelName.trim() || !newChannelApiKey.trim() || !newChannelId.trim()}
-                      >
-                        Cadastrar Canal
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setIsChannelFormOpen(false)}
-                        className="flex-1"
-                      >
-                        Cancelar
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-
-            {/* Lista de canais */}
-            {channels.length > 0 ? (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {channels.map((channel) => (
-                  <div
-                    key={channel.id}
-                    className={`card-modern rounded-lg p-4 cursor-pointer transition-all duration-200 relative ${
-                      selectedChannel?.id === channel.id
-                        ? 'ring-2 ring-primary bg-primary/5 shadow-lg scale-105'
-                        : 'hover:shadow-md border border-border'
-                    }`}
-                    onClick={() => handleSelectChannel(channel)}
-                  >
-                    {selectedChannel?.id === channel.id && (
-                      <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold animate-pulse">
-                        ✓
-                      </div>
-                    )}
-                    <div className="flex flex-col space-y-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="p-2 bg-red-500/10 rounded-full">
-                            <Youtube className="h-4 w-4 text-red-500" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-sm truncate">{channel.name}</h3>
-                            <p className="text-xs text-muted-foreground truncate">
-                              {channel.channelId}
-                            </p>
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteChannel(channel.id);
-                          }}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        Cadastrado em {new Date(channel.createdAt).toLocaleDateString('pt-BR')}
-                      </div>
-                      {selectedChannel?.id === channel.id && (
-                        <div className="text-xs text-primary font-medium">
-                          ● CANAL ATIVO
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center p-8 border border-dashed border-border rounded-lg bg-card/50">
-                <Youtube className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">Nenhum canal cadastrado</h3>
-                <p className="text-muted-foreground mb-4">
-                  Cadastre seu primeiro canal para começar a análise
-                </p>
-              </div>
-            )}
-          </div>
-
           <div className="text-center mb-12">
             <h2 className="text-2xl font-semibold mb-4">Ferramentas de Análise</h2>
             <p className="text-muted-foreground">
-              {selectedChannel 
-                ? `Analisando canal: ${selectedChannel.name}` 
-                : 'Selecione um canal para começar a análise'
-              }
+              Escolha uma plataforma para análise de dados
             </p>
           </div>
 
@@ -785,13 +636,10 @@ const Index = () => {
             <Dialog open={isYoutubeModalOpen} onOpenChange={setIsYoutubeModalOpen}>
               <DialogTrigger asChild>
                 <div className={`card-modern rounded-lg p-6 transition-all duration-200 relative ${
-                  !selectedChannel 
-                    ? 'opacity-50 cursor-not-allowed' 
-                    : selectedPlatform === 'youtube' 
-                      ? 'ring-4 ring-red-500 bg-red-500/10 shadow-lg shadow-red-500/25 scale-105 cursor-pointer' 
-                      : 'hover:shadow-lg cursor-pointer'
-                }`}
-                onClick={!selectedChannel ? (e) => e.preventDefault() : undefined}>
+                  selectedPlatform === 'youtube' 
+                    ? 'ring-4 ring-red-500 bg-red-500/10 shadow-lg shadow-red-500/25 scale-105 cursor-pointer' 
+                    : 'hover:shadow-lg cursor-pointer'
+                }`}>
                   {selectedPlatform === 'youtube' && (
                     <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold animate-pulse">
                       ✓
@@ -821,36 +669,188 @@ const Index = () => {
                   </div>
                 </div>
               </DialogTrigger>
-                <DialogContent className="sm:max-w-5xl card-modern">
+                 <DialogContent className="sm:max-w-5xl card-modern">
                 <DialogHeader>
                   <DialogTitle className="text-xl flex items-center gap-2">
                     <Youtube className="h-5 w-5 text-red-500" />
-                    Análise do Canal: {selectedChannel?.name}
+                    {selectedChannel ? `Análise do Canal: ${selectedChannel?.name}` : 'Gerenciar Canais YouTube'}
                   </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-red-500/10 rounded-full">
-                        <Youtube className="h-4 w-4 text-red-500" />
+                  {/* Seção de Canais Cadastrados */}
+                  {!selectedChannel ? (
+                    <div>
+                      <div className="text-center mb-6">
+                        <h3 className="text-lg font-semibold mb-2">Canais Cadastrados</h3>
+                        <p className="text-muted-foreground">
+                          Gerencie os canais para análise de comentários
+                        </p>
                       </div>
-                      <div>
-                        <p className="font-medium">{selectedChannel?.name}</p>
-                        <p className="text-sm text-muted-foreground">{selectedChannel?.channelId}</p>
+
+                      {/* Botão para adicionar novo canal */}
+                      <div className="flex justify-center mb-4">
+                        <Dialog open={isChannelFormOpen} onOpenChange={setIsChannelFormOpen}>
+                          <DialogTrigger asChild>
+                            <Button className="bg-primary hover:bg-primary/90 flex items-center gap-2">
+                              <Plus className="h-4 w-4" />
+                              Cadastrar Novo Canal
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-md card-modern">
+                            <DialogHeader>
+                              <DialogTitle className="text-xl flex items-center gap-2">
+                                <Youtube className="h-5 w-5 text-red-500" />
+                                Cadastrar Canal
+                              </DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-6">
+                              <div className="space-y-2">
+                                <Label htmlFor="channelName">Nome do Canal</Label>
+                                <Input
+                                  id="channelName"
+                                  placeholder="Digite o nome do canal"
+                                  value={newChannelName}
+                                  onChange={(e) => setNewChannelName(e.target.value)}
+                                  className="bg-input border-border"
+                                />
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <Label htmlFor="newApiKey">API Key do YouTube</Label>
+                                <Input
+                                  id="newApiKey"
+                                  placeholder="Digite sua API key do YouTube"
+                                  value={newChannelApiKey}
+                                  onChange={(e) => setNewChannelApiKey(e.target.value)}
+                                  className="bg-input border-border"
+                                  type="password"
+                                />
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <Label htmlFor="newChannelId">ID do Canal</Label>
+                                <Input
+                                  id="newChannelId"
+                                  placeholder="Digite o ID do canal"
+                                  value={newChannelId}
+                                  onChange={(e) => setNewChannelId(e.target.value)}
+                                  className="bg-input border-border"
+                                />
+                              </div>
+
+                              <div className="flex gap-2">
+                                <Button 
+                                  onClick={handleAddChannel}
+                                  className="flex-1 bg-primary hover:bg-primary/90"
+                                  disabled={!newChannelName.trim() || !newChannelApiKey.trim() || !newChannelId.trim()}
+                                >
+                                  Cadastrar Canal
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  onClick={() => setIsChannelFormOpen(false)}
+                                  className="flex-1"
+                                >
+                                  Cancelar
+                                </Button>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
                       </div>
-                    </div>
-                    <Button 
-                      onClick={handleYoutubeSearch} 
-                      disabled={isLoading}
-                      className="bg-primary hover:bg-primary/90"
-                    >
-                      {isLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+
+                      {/* Lista de canais */}
+                      {channels.length > 0 ? (
+                        <div className="grid md:grid-cols-2 gap-4 max-h-80 overflow-y-auto">
+                          {channels.map((channel) => (
+                            <div
+                              key={channel.id}
+                              className={`card-modern rounded-lg p-4 cursor-pointer transition-all duration-200 relative ${
+                                selectedChannel?.id === channel.id
+                                  ? 'ring-2 ring-primary bg-primary/5 shadow-lg'
+                                  : 'hover:shadow-md border border-border'
+                              }`}
+                              onClick={() => handleSelectChannel(channel)}
+                            >
+                              <div className="flex flex-col space-y-3">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <div className="p-2 bg-red-500/10 rounded-full">
+                                      <Youtube className="h-4 w-4 text-red-500" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <h4 className="font-semibold text-sm truncate">{channel.name}</h4>
+                                      <p className="text-xs text-muted-foreground truncate">
+                                        {channel.channelId}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteChannel(channel.id);
+                                    }}
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  Cadastrado em {new Date(channel.createdAt).toLocaleDateString('pt-BR')}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       ) : (
-                        "Buscar Vídeos"
+                        <div className="text-center p-8 border border-dashed border-border rounded-lg bg-card/50">
+                          <Youtube className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                          <h4 className="text-lg font-medium mb-2">Nenhum canal cadastrado</h4>
+                          <p className="text-muted-foreground mb-4">
+                            Cadastre seu primeiro canal para começar a análise
+                          </p>
+                        </div>
                       )}
-                    </Button>
-                  </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-red-500/10 rounded-full">
+                            <Youtube className="h-4 w-4 text-red-500" />
+                          </div>
+                          <div>
+                            <p className="font-medium">{selectedChannel?.name}</p>
+                            <p className="text-sm text-muted-foreground">{selectedChannel?.channelId}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedChannel(null);
+                              setVideos([]);
+                              setFilteredVideos([]);
+                            }}
+                            size="sm"
+                          >
+                            Trocar Canal
+                          </Button>
+                          <Button 
+                            onClick={handleYoutubeSearch} 
+                            disabled={isLoading}
+                            className="bg-primary hover:bg-primary/90"
+                          >
+                            {isLoading ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              "Buscar Vídeos"
+                            )}
+                          </Button>
+                        </div>
+                      </div>
 
                   {videos.length > 0 && (
                     <>
@@ -901,24 +901,23 @@ const Index = () => {
                              </div>
                            </div>
                          </ScrollArea>
-                       </div>
-                    </>
+                          </div>
+                       </>
+                     )}
+                   </div>
                   )}
-                </div>
-              </DialogContent>
+                 </div>
+               </DialogContent>
             </Dialog>
 
             {/* Analytics Card */}
             <Dialog open={isAnalyticsModalOpen} onOpenChange={setIsAnalyticsModalOpen}>
               <DialogTrigger asChild>
                 <div className={`card-modern rounded-lg p-6 transition-all duration-200 relative ${
-                  !selectedChannel 
-                    ? 'opacity-50 cursor-not-allowed' 
-                    : selectedPlatform === 'analytics' 
-                      ? 'ring-4 ring-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/25 scale-105 cursor-pointer' 
-                      : 'hover:shadow-lg cursor-pointer'
-                }`}
-                onClick={!selectedChannel ? (e) => e.preventDefault() : undefined}>
+                  selectedPlatform === 'analytics' 
+                    ? 'ring-4 ring-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/25 scale-105 cursor-pointer' 
+                    : 'hover:shadow-lg cursor-pointer'
+                }`}>
                   {selectedPlatform === 'analytics' && (
                     <div className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold animate-pulse">
                       ✓
@@ -952,18 +951,20 @@ const Index = () => {
                 <DialogHeader>
                   <DialogTitle className="text-xl flex items-center gap-2">
                     <BarChart3 className="h-5 w-5 text-blue-500" />
-                    Analytics do Canal: {selectedChannel?.name}
+                    Analytics do YouTube
                   </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-6">
-                  <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
-                    <div className="p-2 bg-blue-500/10 rounded-full">
-                      <BarChart3 className="h-4 w-4 text-blue-500" />
-                    </div>
-                    <div>
-                      <p className="font-medium">{selectedChannel?.name}</p>
-                      <p className="text-sm text-muted-foreground">{selectedChannel?.channelId}</p>
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="analyticsApiKey">API Key do YouTube</Label>
+                    <Input
+                      id="analyticsApiKey"
+                      placeholder="Digite sua API key do YouTube"
+                      value={analyticsApiKey}
+                      onChange={(e) => setAnalyticsApiKey(e.target.value)}
+                      className="bg-input border-border"
+                      type="password"
+                    />
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
@@ -998,7 +999,7 @@ const Index = () => {
 
                   <Button 
                     onClick={handleAnalyticsSearch} 
-                    disabled={isLoading || !youtubeApiKey.trim() || !analyticsStartDate || !analyticsEndDate}
+                    disabled={isLoading || !analyticsApiKey.trim() || !analyticsStartDate || !analyticsEndDate}
                     className="w-full bg-primary hover:bg-primary/90"
                   >
                     {isLoading ? (
