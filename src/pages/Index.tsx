@@ -850,31 +850,31 @@ const Index = () => {
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label>Vídeos encontrados ({filteredVideos.length})</Label>
-                        <ScrollArea className="h-40 w-full border border-border rounded-md bg-card">
-                          <div className="p-4">
-                            <div className="flex gap-4 overflow-x-auto pb-4">
-                              {filteredVideos.map((video, index) => (
-                                <div
-                                   key={index}
-                                   className="min-w-80 flex-shrink-0 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors bg-card cursor-pointer"
-                                   onClick={() => handleVideoClick(video)}
-                                 >
-                                   <div className="flex items-start gap-3">
-                                     <Play className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
-                                     <div className="flex-1 min-w-0">
-                                       <p className="text-sm font-medium leading-relaxed break-words line-clamp-3">
-                                         {video.title}
-                                       </p>
-                                     </div>
-                                   </div>
-                                 </div>
-                              ))}
-                            </div>
-                          </div>
-                        </ScrollArea>
-                      </div>
+                       <div className="space-y-2">
+                         <Label>Vídeos encontrados ({filteredVideos.length})</Label>
+                         <ScrollArea className="h-80 w-full border border-border rounded-md bg-card">
+                           <div className="p-4">
+                             <div className="space-y-4">
+                               {filteredVideos.map((video, index) => (
+                                 <div
+                                    key={index}
+                                    className="w-full p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors bg-card cursor-pointer"
+                                    onClick={() => handleVideoClick(video)}
+                                  >
+                                    <div className="flex items-start gap-3">
+                                      <Play className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium leading-relaxed break-words line-clamp-3">
+                                          {video.title}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+                               ))}
+                             </div>
+                           </div>
+                         </ScrollArea>
+                       </div>
                     </>
                   )}
                 </div>
