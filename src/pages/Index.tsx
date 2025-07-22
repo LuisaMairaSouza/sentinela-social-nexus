@@ -803,48 +803,35 @@ const Index = () => {
                   </div>
                 </div>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-5xl card-modern">
+                <DialogContent className="sm:max-w-5xl card-modern">
                 <DialogHeader>
                   <DialogTitle className="text-xl flex items-center gap-2">
                     <Youtube className="h-5 w-5 text-red-500" />
-                    Análise de Canal YouTube
+                    Análise do Canal: {selectedChannel?.name}
                   </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="apiKey">API Key do YouTube</Label>
-                    <Input
-                      id="apiKey"
-                      placeholder="Digite sua API key do YouTube"
-                      value={youtubeApiKey}
-                      onChange={(e) => setYoutubeApiKey(e.target.value)}
-                      className="bg-input border-border"
-                      type="password"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="channelId">ID do Canal</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        id="channelId"
-                        placeholder="Digite o ID do canal"
-                        value={youtubeChannelId}
-                        onChange={(e) => setYoutubeChannelId(e.target.value)}
-                        className="bg-input border-border"
-                      />
-                      <Button 
-                        onClick={handleYoutubeSearch} 
-                        disabled={isLoading || !youtubeApiKey.trim() || !youtubeChannelId.trim()}
-                        className="bg-primary hover:bg-primary/90"
-                      >
-                        {isLoading ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          "Buscar"
-                        )}
-                      </Button>
+                  <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-red-500/10 rounded-full">
+                        <Youtube className="h-4 w-4 text-red-500" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{selectedChannel?.name}</p>
+                        <p className="text-sm text-muted-foreground">{selectedChannel?.channelId}</p>
+                      </div>
                     </div>
+                    <Button 
+                      onClick={handleYoutubeSearch} 
+                      disabled={isLoading}
+                      className="bg-primary hover:bg-primary/90"
+                    >
+                      {isLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        "Buscar Vídeos"
+                      )}
+                    </Button>
                   </div>
 
                   {videos.length > 0 && (
@@ -938,20 +925,18 @@ const Index = () => {
                 <DialogHeader>
                   <DialogTitle className="text-xl flex items-center gap-2">
                     <BarChart3 className="h-5 w-5 text-blue-500" />
-                    YouTube Analytics
+                    Analytics do Canal: {selectedChannel?.name}
                   </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="analyticsApiKey">API Key do YouTube</Label>
-                    <Input
-                      id="analyticsApiKey"
-                      placeholder="Digite sua API key do YouTube"
-                      value={youtubeApiKey}
-                      onChange={(e) => setYoutubeApiKey(e.target.value)}
-                      className="bg-input border-border"
-                      type="password"
-                    />
+                  <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+                    <div className="p-2 bg-blue-500/10 rounded-full">
+                      <BarChart3 className="h-4 w-4 text-blue-500" />
+                    </div>
+                    <div>
+                      <p className="font-medium">{selectedChannel?.name}</p>
+                      <p className="text-sm text-muted-foreground">{selectedChannel?.channelId}</p>
+                    </div>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
