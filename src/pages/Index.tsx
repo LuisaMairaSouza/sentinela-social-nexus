@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { Youtube, BarChart3, Search, Loader2, Play, BarChart, PieChart as PieChartIcon, Calendar, TrendingUp, Plus, Settings, Trash2 } from "lucide-react";
+import { Youtube, BarChart3, Search, Loader2, Play, BarChart, PieChart as PieChartIcon, Calendar, TrendingUp, Plus, Settings, Trash2, Sun, Moon } from "lucide-react";
+import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart as RechartsBarChart, Bar, XAxis, YAxis, LineChart, Line, CartesianGrid } from "recharts";
 
@@ -76,6 +78,7 @@ const Index = () => {
   const [showComments, setShowComments] = useState(false);
   const [selectedSentiment, setSelectedSentiment] = useState<string | null>(null);
   const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
 
   // Carregar canais do localStorage
   useEffect(() => {
@@ -611,6 +614,18 @@ const Index = () => {
       {/* Header */}
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-6 py-8">
+          {/* Theme Toggle */}
+          <div className="flex justify-end mb-4">
+            <div className="flex items-center gap-3">
+              <Sun className="h-4 w-4" />
+              <Switch
+                checked={theme === "dark"}
+                onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+              />
+              <Moon className="h-4 w-4" />
+            </div>
+          </div>
+          
           <h1 className="text-5xl md:text-6xl text-center detective-title mb-2">
             SENTINELA
           </h1>
