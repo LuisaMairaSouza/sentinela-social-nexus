@@ -610,38 +610,91 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen hero-gradient">
       {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-6 py-8">
-          {/* Theme Toggle */}
-          <div className="flex justify-end mb-4">
-            <div className="flex items-center gap-3">
-              <Sun className="h-4 w-4" />
-              <Switch
-                checked={theme === "dark"}
-                onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
-              />
-              <Moon className="h-4 w-4" />
+      <header className="border-b border-border/20 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <BarChart3 className="h-8 w-8 text-primary" />
+                <span className="text-xl font-bold text-foreground">SENTINELA</span>
+              </div>
+            </div>
+            
+            <nav className="hidden md:flex items-center space-x-8">
+              <Button variant="ghost" className="text-foreground hover:text-primary">
+                Dashboard
+              </Button>
+              <Button variant="ghost" className="text-foreground hover:text-primary">
+                Analytics
+              </Button>
+              <Button variant="ghost" className="text-foreground hover:text-primary">
+                Reports
+              </Button>
+            </nav>
+            
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <Sun className="h-4 w-4 text-muted-foreground" />
+                <Switch
+                  checked={theme === "dark"}
+                  onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+                />
+                <Moon className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                Get Started
+              </Button>
             </div>
           </div>
-          
-          <h1 className="text-5xl md:text-6xl text-center detective-title mb-2">
-            SENTINELA
-          </h1>
-          <p className="text-center text-muted-foreground text-lg">
-            Sistema de Investigação Digital
-          </p>
         </div>
       </header>
 
+      {/* Hero Section */}
+      <section className="py-20 px-4 text-center">
+        <div className="max-w-4xl mx-auto space-y-8">
+          <h1 className="text-5xl md:text-6xl font-bold">
+            <span className="gradient-text">AI-Powered</span>
+            <br />
+            <span className="text-foreground">Digital Investigation</span>
+          </h1>
+          
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            Advanced digital investigation system with AI-powered analytics for social media monitoring, 
+            sentiment analysis, and comprehensive data insights.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Button 
+              size="lg" 
+              className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-3 text-lg"
+            >
+              Start Investigation
+            </Button>
+            <Button 
+              variant="outline" 
+              size="lg"
+              className="border-border text-foreground hover:bg-card px-8 py-3 text-lg"
+            >
+              View Demo
+            </Button>
+          </div>
+          
+          <p className="text-sm text-muted-foreground">
+            Connect your platforms • Get instant insights • Advanced AI analysis
+          </p>
+        </div>
+      </section>
+
       {/* Main Content */}
-      <main className="container mx-auto px-6 py-12">
-        <div className="max-w-4xl mx-auto">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        {/* Analysis Tools Section */}
+        <div className="glass-card rounded-lg p-8 mb-8">
           <div className="text-center mb-12">
-            <h2 className="text-2xl font-semibold mb-4">Ferramentas de Análise</h2>
-            <p className="text-muted-foreground">
-              Escolha uma plataforma para análise de dados
+            <h2 className="text-3xl font-bold text-foreground mb-4">Investigation Tools</h2>
+            <p className="text-muted-foreground text-lg">
+              Choose a platform to begin your digital investigation
             </p>
           </div>
 
@@ -650,35 +703,35 @@ const Index = () => {
             {/* YouTube Card */}
             <Dialog open={isYoutubeModalOpen} onOpenChange={setIsYoutubeModalOpen}>
               <DialogTrigger asChild>
-                <div className={`card-modern rounded-lg p-6 transition-all duration-200 relative ${
+                 <div className={`icon-button rounded-xl p-8 transition-all duration-300 relative ${
                   selectedPlatform === 'youtube' 
-                    ? 'ring-4 ring-red-500 bg-red-500/10 shadow-lg shadow-red-500/25 scale-105 cursor-pointer' 
+                    ? 'ring-2 ring-primary bg-primary/10 shadow-xl shadow-primary/25 scale-105 cursor-pointer' 
                     : 'hover:shadow-lg cursor-pointer'
                 }`}>
-                  {selectedPlatform === 'youtube' && (
-                    <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold animate-pulse">
+                   {selectedPlatform === 'youtube' && (
+                    <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
                       ✓
                     </div>
                   )}
-                  <div className="flex flex-col items-center text-center space-y-4">
-                    <div className={`p-4 rounded-full transition-all duration-200 ${
+                  <div className="flex flex-col items-center text-center space-y-6">
+                    <div className={`p-6 rounded-full transition-all duration-300 ${
                       selectedPlatform === 'youtube' 
-                        ? 'bg-red-500/30 shadow-lg' 
+                        ? 'bg-primary/20 shadow-lg' 
                         : 'bg-red-500/10'
                     }`}>
-                      <Youtube className={`h-8 w-8 transition-all duration-200 ${
-                        selectedPlatform === 'youtube' ? 'text-red-600 scale-110' : 'text-red-500'
+                      <Youtube className={`h-12 w-12 transition-all duration-300 ${
+                        selectedPlatform === 'youtube' ? 'text-primary scale-110' : 'text-red-500'
                       }`} />
                     </div>
-                    <h3 className={`text-xl font-semibold ${
-                      selectedPlatform === 'youtube' ? 'text-red-600' : ''
+                    <h3 className={`text-2xl font-semibold ${
+                      selectedPlatform === 'youtube' ? 'text-primary' : 'text-foreground'
                     }`}>YouTube</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Buscar e analisar vídeos de canais
+                    <p className="text-muted-foreground">
+                      Search and analyze channel videos with AI-powered insights
                     </p>
                     {selectedPlatform === 'youtube' && (
-                      <div className="text-xs text-red-600 font-medium">
-                        ● ANALISANDO
+                      <div className="text-sm text-primary font-medium">
+                        Platform Connected
                       </div>
                     )}
                   </div>
@@ -928,35 +981,35 @@ const Index = () => {
             {/* Analytics Card */}
             <Dialog open={isAnalyticsModalOpen} onOpenChange={setIsAnalyticsModalOpen}>
               <DialogTrigger asChild>
-                <div className={`card-modern rounded-lg p-6 transition-all duration-200 relative ${
+                 <div className={`icon-button rounded-xl p-8 transition-all duration-300 relative ${
                   selectedPlatform === 'analytics' 
-                    ? 'ring-4 ring-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/25 scale-105 cursor-pointer' 
+                    ? 'ring-2 ring-primary bg-primary/10 shadow-xl shadow-primary/25 scale-105 cursor-pointer' 
                     : 'hover:shadow-lg cursor-pointer'
                 }`}>
                   {selectedPlatform === 'analytics' && (
-                    <div className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold animate-pulse">
+                    <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
                       ✓
                     </div>
                   )}
-                  <div className="flex flex-col items-center text-center space-y-4">
-                    <div className={`p-4 rounded-full transition-all duration-200 ${
+                  <div className="flex flex-col items-center text-center space-y-6">
+                    <div className={`p-6 rounded-full transition-all duration-300 ${
                       selectedPlatform === 'analytics' 
-                        ? 'bg-blue-500/30 shadow-lg' 
+                        ? 'bg-primary/20 shadow-lg' 
                         : 'bg-blue-500/10'
                     }`}>
-                      <BarChart3 className={`h-8 w-8 transition-all duration-200 ${
-                        selectedPlatform === 'analytics' ? 'text-blue-600 scale-110' : 'text-blue-500'
+                      <BarChart3 className={`h-12 w-12 transition-all duration-300 ${
+                        selectedPlatform === 'analytics' ? 'text-primary scale-110' : 'text-blue-500'
                       }`} />
                     </div>
-                    <h3 className={`text-xl font-semibold ${
-                      selectedPlatform === 'analytics' ? 'text-blue-600' : ''
+                    <h3 className={`text-2xl font-semibold ${
+                      selectedPlatform === 'analytics' ? 'text-primary' : 'text-foreground'
                     }`}>Analytics</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Análise estatística de dados
+                    <p className="text-muted-foreground">
+                      Advanced statistical analysis and performance insights
                     </p>
                     {selectedPlatform === 'analytics' && (
-                      <div className="text-xs text-blue-600 font-medium">
-                        ● ANALISANDO
+                      <div className="text-sm text-primary font-medium">
+                        Platform Connected
                       </div>
                     )}
                   </div>
