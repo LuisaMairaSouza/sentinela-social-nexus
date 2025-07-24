@@ -644,12 +644,12 @@ const Index = () => {
             
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <Sun className="h-4 w-4 text-muted-foreground" />
+                <Sun className={`h-4 w-4 ${theme === "light" ? "text-primary" : "text-muted-foreground"}`} />
                 <Switch
-                  checked={theme === "dark"}
-                  onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+                  checked={theme === "light"}
+                  onCheckedChange={(checked) => setTheme(checked ? "light" : "dark")}
                 />
-                <Moon className="h-4 w-4 text-muted-foreground" />
+                <Moon className={`h-4 w-4 ${theme === "dark" ? "text-primary" : "text-muted-foreground"}`} />
               </div>
               {/* Botão removido por ser inativo */}
             </div>
