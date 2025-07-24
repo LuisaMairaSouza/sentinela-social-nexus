@@ -77,6 +77,9 @@ const Index = () => {
   const [newChannelId, setNewChannelId] = useState("");
   const [showComments, setShowComments] = useState(false);
   const [selectedSentiment, setSelectedSentiment] = useState<string | null>(null);
+  const [isAnalyzingComments, setIsAnalyzingComments] = useState(false);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false);
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
 
@@ -290,6 +293,7 @@ const Index = () => {
   };
 
   const handleVideoClick = async (video: Video) => {
+    setIsAnalyzingComments(true);
     try {
       console.log("Enviando dados do vídeo:", video.id_video, "com API Key:", youtubeApiKey);
       
@@ -388,10 +392,13 @@ const Index = () => {
         description: error instanceof Error ? error.message : "Falha ao carregar dados do vídeo.",
         variant: "destructive",
       });
+    } finally {
+      setIsAnalyzingComments(false);
     }
   };
 
   const handleSuggestionsClick = async () => {
+    setIsLoadingSuggestions(true);
     try {
       if (!selectedVideoId) {
         toast({
@@ -482,6 +489,8 @@ const Index = () => {
         description: error instanceof Error ? error.message : "Falha ao carregar sugestões.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoadingSuggestions(false);
     }
   };
 
@@ -518,7 +527,7 @@ const Index = () => {
       return;
     }
 
-    setIsLoading(true);
+    setIsLoadingAnalytics(true);
     try {
       const response = await fetch("https://api.teste.onlinecenter.com.br/webhook/buscar-youtube-analytics", {
         method: "POST",
@@ -575,7 +584,7 @@ const Index = () => {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsLoadingAnalytics(false);
     }
   };
 
@@ -935,29 +944,38 @@ const Index = () => {
                            <div className="p-4">
                              <div className="space-y-4">
                                {filteredVideos.map((video, index) => (
-                                 <div
-                                    key={index}
-                                    className="w-full p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors bg-card cursor-pointer"
-                                    onClick={() => handleVideoClick(video)}
-                                  >
-                                    <div className="flex items-start gap-4">
-                                      <div className="flex-shrink-0">
-                                        <img
-                                          src={video.thumbnail || `https://i.ytimg.com/vi/${video.id_video}/hqdefault.jpg`}
-                                          alt={video.title}
-                                          className="w-20 h-15 object-cover rounded"
-                                        />
-                                      </div>
-                                      <div className="flex items-start gap-2 flex-1 min-w-0">
-                                        <Play className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
-                                        <div className="flex-1 min-w-0">
-                                          <p className="text-sm font-medium leading-relaxed break-words line-clamp-3">
-                                            {video.title}
-                                          </p>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
+                                  <div
+                                     key={index}
+                                     className={`w-full p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors bg-card cursor-pointer ${isAnalyzingComments ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                     onClick={() => !isAnalyzingComments && handleVideoClick(video)}
+                                   >
+                                     <div className="flex items-start gap-4">
+                                       <div className="flex-shrink-0">
+                                         <img
+                                           src={video.thumbnail || `https://i.ytimg.com/vi/${video.id_video}/hqdefault.jpg`}
+                                           alt={video.title}
+                                           className="w-20 h-15 object-cover rounded"
+                                         />
+                                       </div>
+                                       <div className="flex items-start gap-2 flex-1 min-w-0">
+                                         {isAnalyzingComments ? (
+                                           <Loader2 className="h-4 w-4 text-primary mt-1 flex-shrink-0 animate-spin" />
+                                         ) : (
+                                           <Play className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
+                                         )}
+                                         <div className="flex-1 min-w-0">
+                                           <p className="text-sm font-medium leading-relaxed break-words line-clamp-3">
+                                             {video.title}
+                                           </p>
+                                           {isAnalyzingComments && (
+                                             <p className="text-xs text-primary mt-1">
+                                               Analisando comentários...
+                                             </p>
+                                           )}
+                                         </div>
+                                       </div>
+                                     </div>
+                                   </div>
                                ))}
                              </div>
                            </div>
@@ -1060,11 +1078,14 @@ const Index = () => {
 
                   <Button 
                     onClick={handleAnalyticsSearch} 
-                    disabled={isLoading || !analyticsApiKey.trim() || !analyticsStartDate || !analyticsEndDate}
+                    disabled={isLoadingAnalytics || !analyticsApiKey.trim() || !analyticsStartDate || !analyticsEndDate}
                     className="w-full bg-primary hover:bg-primary/90"
                   >
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    {isLoadingAnalytics ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Carregando Analytics...
+                      </>
                     ) : (
                       <>
                         <BarChart3 className="h-4 w-4 mr-2" />
@@ -1253,8 +1274,16 @@ const Index = () => {
                         onClick={handleSuggestionsClick}
                         className="bg-primary hover:bg-primary/90"
                         size="sm"
+                        disabled={isLoadingSuggestions}
                       >
-                        Sugestões
+                        {isLoadingSuggestions ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Carregando...
+                          </>
+                        ) : (
+                          "Sugestões"
+                        )}
                       </Button>
                     </div>
                   </div>
