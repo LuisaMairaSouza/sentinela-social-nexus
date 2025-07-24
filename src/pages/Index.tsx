@@ -667,7 +667,7 @@ const Index = () => {
           </h1>
           
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Sistema avançado de investigação digital com análises alimentadas por IA para monitoramento de redes sociais, 
+            Sistema avançado de investigação digital com análises alimentadas por IA para monitoramento do YouTube e Analytics, 
             análise de sentimentos e insights abrangentes de dados.
           </p>
           
