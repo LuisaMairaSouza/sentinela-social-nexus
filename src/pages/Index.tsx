@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Youtube, BarChart3, Search, Loader2, Play, BarChart, PieChart as PieChartIcon, Calendar, TrendingUp, Plus, Settings, Trash2, Sun, Moon } from "lucide-react";
+import { Youtube, BarChart3, Search, Loader2, Play, BarChart, PieChart as PieChartIcon, Calendar, TrendingUp, Plus, Settings, Trash2, Sun, Moon, Eye } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -617,7 +617,7 @@ const Index = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <BarChart3 className="h-8 w-8 text-primary" />
+                <Eye className="h-8 w-8 text-primary" />
                 <span className="text-xl font-bold text-foreground">SENTINELA</span>
               </div>
             </div>
@@ -665,19 +665,12 @@ const Index = () => {
             análise de sentimentos e insights abrangentes de dados.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <div className="flex justify-center items-center">
             <Button 
               size="lg" 
               className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-3 text-lg"
             >
               Iniciar Investigação
-            </Button>
-            <Button 
-              variant="outline" 
-              size="lg"
-              className="border-border text-foreground hover:bg-card px-8 py-3 text-lg"
-            >
-              Ver Demo
             </Button>
           </div>
           
