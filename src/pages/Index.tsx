@@ -618,6 +618,13 @@ const Index = () => {
     setSelectedSentiment(null); // Reset the sentiment filter when toggling
   };
 
+  const scrollToTools = () => {
+    const toolsSection = document.getElementById('tools-section');
+    if (toolsSection) {
+      toolsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="min-h-screen hero-gradient">
       {/* Header */}
@@ -632,15 +639,7 @@ const Index = () => {
             </div>
             
             <nav className="hidden md:flex items-center space-x-8">
-              <Button variant="ghost" className="text-foreground hover:text-primary">
-                Painel
-              </Button>
-              <Button variant="ghost" className="text-foreground hover:text-primary">
-                Análises
-              </Button>
-              <Button variant="ghost" className="text-foreground hover:text-primary">
-                Relatórios
-              </Button>
+              {/* Botões removidos por serem inativos */}
             </nav>
             
             <div className="flex items-center space-x-4">
@@ -652,9 +651,7 @@ const Index = () => {
                 />
                 <Moon className="h-4 w-4 text-muted-foreground" />
               </div>
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                Começar
-              </Button>
+              {/* Botão removido por ser inativo */}
             </div>
           </div>
         </div>
@@ -678,6 +675,7 @@ const Index = () => {
             <Button 
               size="lg" 
               className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-3 text-lg"
+              onClick={scrollToTools}
             >
               Iniciar Investigação
             </Button>
@@ -690,7 +688,7 @@ const Index = () => {
       </section>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20" id="tools-section">
         {/* Analysis Tools Section */}
         <div className="glass-card rounded-lg p-8 mb-8">
           <div className="text-center mb-12">
