@@ -624,13 +624,13 @@ const Index = () => {
             
             <nav className="hidden md:flex items-center space-x-8">
               <Button variant="ghost" className="text-foreground hover:text-primary">
-                Dashboard
+                Painel
               </Button>
               <Button variant="ghost" className="text-foreground hover:text-primary">
-                Analytics
+                Análises
               </Button>
               <Button variant="ghost" className="text-foreground hover:text-primary">
-                Reports
+                Relatórios
               </Button>
             </nav>
             
@@ -644,7 +644,7 @@ const Index = () => {
                 <Moon className="h-4 w-4 text-muted-foreground" />
               </div>
               <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                Get Started
+                Começar
               </Button>
             </div>
           </div>
@@ -655,14 +655,14 @@ const Index = () => {
       <section className="py-20 px-4 text-center">
         <div className="max-w-4xl mx-auto space-y-8">
           <h1 className="text-5xl md:text-6xl font-bold">
-            <span className="gradient-text">AI-Powered</span>
+            <span className="gradient-text">Investigação Digital</span>
             <br />
-            <span className="text-foreground">Digital Investigation</span>
+            <span className="text-foreground">Alimentada por IA</span>
           </h1>
           
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Advanced digital investigation system with AI-powered analytics for social media monitoring, 
-            sentiment analysis, and comprehensive data insights.
+            Sistema avançado de investigação digital com análises alimentadas por IA para monitoramento de redes sociais, 
+            análise de sentimentos e insights abrangentes de dados.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -670,19 +670,19 @@ const Index = () => {
               size="lg" 
               className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-3 text-lg"
             >
-              Start Investigation
+              Iniciar Investigação
             </Button>
             <Button 
               variant="outline" 
               size="lg"
               className="border-border text-foreground hover:bg-card px-8 py-3 text-lg"
             >
-              View Demo
+              Ver Demo
             </Button>
           </div>
           
           <p className="text-sm text-muted-foreground">
-            Connect your platforms • Get instant insights • Advanced AI analysis
+            Conecte suas plataformas • Obtenha insights instantâneos • Análise avançada de IA
           </p>
         </div>
       </section>
@@ -692,9 +692,9 @@ const Index = () => {
         {/* Analysis Tools Section */}
         <div className="glass-card rounded-lg p-8 mb-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">Investigation Tools</h2>
+            <h2 className="text-3xl font-bold text-foreground mb-4">Ferramentas de Investigação</h2>
             <p className="text-muted-foreground text-lg">
-              Choose a platform to begin your digital investigation
+              Escolha uma plataforma para começar sua investigação digital
             </p>
           </div>
 
@@ -727,11 +727,11 @@ const Index = () => {
                       selectedPlatform === 'youtube' ? 'text-primary' : 'text-foreground'
                     }`}>YouTube</h3>
                     <p className="text-muted-foreground">
-                      Search and analyze channel videos with AI-powered insights
+                      Busque e analise vídeos de canais com insights alimentados por IA
                     </p>
                     {selectedPlatform === 'youtube' && (
                       <div className="text-sm text-primary font-medium">
-                        Platform Connected
+                        Plataforma Conectada
                       </div>
                     )}
                   </div>
@@ -1005,11 +1005,11 @@ const Index = () => {
                       selectedPlatform === 'analytics' ? 'text-primary' : 'text-foreground'
                     }`}>Analytics</h3>
                     <p className="text-muted-foreground">
-                      Advanced statistical analysis and performance insights
+                      Análises estatísticas avançadas e insights de desempenho
                     </p>
                     {selectedPlatform === 'analytics' && (
                       <div className="text-sm text-primary font-medium">
-                        Platform Connected
+                        Plataforma Conectada
                       </div>
                     )}
                   </div>
