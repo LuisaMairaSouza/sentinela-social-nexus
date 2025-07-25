@@ -8,49 +8,6 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 219 39% 11%;
-    --foreground: 0 0% 98%;
-
-    --card: 219 39% 12%;
-    --card-foreground: 0 0% 98%;
-
-    --popover: 219 39% 12%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 35 100% 62%;
-    --primary-foreground: 219 39% 11%;
-
-    --secondary: 219 39% 15%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 219 39% 15%;
-    --muted-foreground: 0 0% 65%;
-
-    --accent: 35 100% 62%;
-    --accent-foreground: 219 39% 11%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 219 39% 18%;
-    --input: 219 39% 18%;
-    --ring: 35 100% 62%;
-
-    --detective-yellow: 35 100% 62%;
-
-    --radius: 0.75rem;
-
-    --sidebar-background: 219 39% 12%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 35 100% 62%;
-    --sidebar-primary-foreground: 219 39% 11%;
-    --sidebar-accent: 219 39% 15%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 219 39% 18%;
-    --sidebar-ring: 35 100% 62%;
-  }
-
-  .dark {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -81,6 +38,8 @@ All colors MUST be HSL.
 
     --detective-yellow: 35 100% 62%;
     
+    --radius: 0.75rem;
+
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 35 100% 62%;
@@ -88,6 +47,47 @@ All colors MUST be HSL.
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 35 100% 62%;
+  }
+
+  .dark {
+    --background: 219 39% 11%;
+    --foreground: 0 0% 98%;
+
+    --card: 219 39% 12%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 219 39% 12%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 35 100% 62%;
+    --primary-foreground: 219 39% 11%;
+
+    --secondary: 219 39% 15%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 219 39% 15%;
+    --muted-foreground: 0 0% 65%;
+
+    --accent: 35 100% 62%;
+    --accent-foreground: 219 39% 11%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 219 39% 18%;
+    --input: 219 39% 18%;
+    --ring: 35 100% 62%;
+
+    --detective-yellow: 35 100% 62%;
+
+    --sidebar-background: 219 39% 12%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 35 100% 62%;
+    --sidebar-primary-foreground: 219 39% 11%;
+    --sidebar-accent: 219 39% 15%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 219 39% 18%;
     --sidebar-ring: 35 100% 62%;
   }
 }
