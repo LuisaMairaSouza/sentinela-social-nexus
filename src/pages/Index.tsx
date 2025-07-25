@@ -77,7 +77,7 @@ const Index = () => {
   const [newChannelId, setNewChannelId] = useState("");
   const [showComments, setShowComments] = useState(false);
   const [selectedSentiment, setSelectedSentiment] = useState<string | null>(null);
-  const [isAnalyzingComments, setIsAnalyzingComments] = useState(false);
+  const [loadingVideoId, setLoadingVideoId] = useState<string | null>(null);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false);
   const { toast } = useToast();
@@ -293,7 +293,7 @@ const Index = () => {
   };
 
   const handleVideoClick = async (video: Video) => {
-    setIsAnalyzingComments(true);
+    setLoadingVideoId(video.id_video);
     try {
       console.log("Enviando dados do vídeo:", video.id_video, "com API Key:", youtubeApiKey);
       
@@ -393,7 +393,7 @@ const Index = () => {
         variant: "destructive",
       });
     } finally {
-      setIsAnalyzingComments(false);
+      setLoadingVideoId(null);
     }
   };
 
@@ -944,8 +944,8 @@ const Index = () => {
                                {filteredVideos.map((video, index) => (
                                   <div
                                      key={index}
-                                     className={`w-full p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors bg-card cursor-pointer ${isAnalyzingComments ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                     onClick={() => !isAnalyzingComments && handleVideoClick(video)}
+                                     className={`w-full p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors bg-card cursor-pointer ${loadingVideoId === video.id_video ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                     onClick={() => loadingVideoId !== video.id_video && handleVideoClick(video)}
                                    >
                                      <div className="flex items-start gap-4">
                                        <div className="flex-shrink-0">
@@ -955,23 +955,23 @@ const Index = () => {
                                            className="w-20 h-15 object-cover rounded"
                                          />
                                        </div>
-                                       <div className="flex items-start gap-2 flex-1 min-w-0">
-                                         {isAnalyzingComments ? (
-                                           <Loader2 className="h-4 w-4 text-primary mt-1 flex-shrink-0 animate-spin" />
-                                         ) : (
-                                           <Play className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
-                                         )}
-                                         <div className="flex-1 min-w-0">
-                                           <p className="text-sm font-medium leading-relaxed break-words line-clamp-3">
-                                             {video.title}
-                                           </p>
-                                           {isAnalyzingComments && (
-                                             <p className="text-xs text-primary mt-1">
-                                               Analisando comentários...
-                                             </p>
-                                           )}
-                                         </div>
-                                       </div>
+                                        <div className="flex items-start gap-2 flex-1 min-w-0">
+                                          {loadingVideoId === video.id_video ? (
+                                            <Loader2 className="h-4 w-4 text-primary mt-1 flex-shrink-0 animate-spin" />
+                                          ) : (
+                                            <Play className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
+                                          )}
+                                          <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium leading-relaxed break-words line-clamp-3">
+                                              {video.title}
+                                            </p>
+                                            {loadingVideoId === video.id_video && (
+                                              <p className="text-xs text-primary mt-1">
+                                                Analisando comentários...
+                                              </p>
+                                            )}
+                                          </div>
+                                        </div>
                                      </div>
                                    </div>
                                ))}
