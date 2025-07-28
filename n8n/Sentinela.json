@@ -1,0 +1,1649 @@
+{
+  "name": "Sentinela",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1232,
+        128
+      ],
+      "id": "285e066b-e197-4ac3-a737-c4e0b10b42fb",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "B4rycT9KgCdOLO94",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.items.snippet.topLevelComment.snippet.textOriginal }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "# Prompt para Análise de Sentimento no n8n\n\nVocê é um agente de IA especializado em análise de sentimentos. Sua tarefa é analisar o sentimento do texto fornecido e classificá-lo em uma das seguintes categorias: **positivo**, **negativo** ou **neutro**.\n\nSiga as instruções abaixo cuidadosamente:\n\n1. Leia atentamente o texto fornecido.\n2. Analise o sentimento predominante do texto.\n3. Classifique o sentimento como \"positivo\", \"negativo\" ou \"neutro\".\n4. Essas mensagens estão vindo da rede social YouTube.\n5. Retorne no formato definido no **code tool**"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        -64
+      ],
+      "id": "cfe45818-abe2-4ed4-9d50-c7a9a6d8addc",
+      "name": "AI Agent1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Split Out').item.json.items.snippet.topLevelComment.id }}",
+        "tableName": "n8n_historico_mensagens",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        1344,
+        128
+      ],
+      "id": "b8d4aa9b-12ad-4286-942b-94b6733084c7",
+      "name": "Postgres Chat Memory1",
+      "credentials": {
+        "postgres": {
+          "id": "eGJYNbJNPdAIhcBl",
+          "name": "Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  const rawStr = item.json.output;\n\n  // Caso 1: já é só \"Negativo\", \"Positivo\", etc.\n  if (\n    rawStr === \"Negativo\" ||\n    rawStr === \"Positivo\" ||\n    rawStr === \"Neutro\"\n  ) {\n    return {\n      json: {\n        classificacao: rawStr,\n        palavrasChave: \"NÃO DEFINIDO\",\n        tema: \"NÃO DEFINIDO\",\n        rede_social: \"NÃO DEFINIDO\"\n      }\n    };\n  }\n\n  // Caso 2: é um JSON em string\n  try {\n    // Remove quebras de linha para garantir o parse\n    const cleanStr = rawStr.replace(/\\\\n/g, '');\n    const dados = JSON.parse(cleanStr);\n\n    return {\n      json: {\n        classificacao: dados.classificacao,\n        palavrasChave: dados[\"palavras-chave\"],\n        tema: dados.tema,\n        rede_social: dados.rede_social\n      }\n    };\n  } catch (e) {\n    // Se der erro, retorna o erro para depuração\n    return {\n      json: {\n        erro: 'Não foi possível fazer o parse do campo output',\n        valor: rawStr\n      }\n    };\n  }\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1632,
+        -64
+      ],
+      "id": "63e8ff1a-5ec2-4eaa-a73e-8719cf3db9ee",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        112,
+        1664
+      ],
+      "id": "02ba6bcb-0b0d-4901-a345-0787e8548c83",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "tableId": "n8n_historico_mensagens",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "created_at",
+              "condition": "lt",
+              "keyValue": "={{ $now }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        336,
+        1664
+      ],
+      "id": "40874725-61b4-4f59-9927-3557e2824cf3",
+      "name": "Exclui historico de mensagens",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "999P97CJQzJBnWKj",
+          "name": "Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Exclui o histórico de mensagens do supabase\n",
+        "height": 260,
+        "width": 540,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        16,
+        1584
+      ],
+      "typeVersion": 1,
+      "id": "470f0720-6b39-49fd-ab00-97e3c19d2729",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1f60cdfc-2994-4bf2-9c29-c335bb7d92cc",
+              "name": "rede_social",
+              "value": "YouTube",
+              "type": "string"
+            },
+            {
+              "id": "a4abdd42-7052-463c-a9d7-3d1643a40d9d",
+              "name": "apiKey",
+              "value": "={{ $json.body.apiKey }}",
+              "type": "string"
+            },
+            {
+              "id": "04c2c1c4-7a29-41f2-9cad-26981b53352d",
+              "name": "id_video",
+              "value": "={{ $json.body.id_video }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        -64
+      ],
+      "id": "2891493b-f4e6-4c46-b1f0-27e29f5aef5e",
+      "name": "Rede_social1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6124f46b-5195-43bf-a0ed-d7598bff80f2",
+              "name": "title",
+              "value": "={{ $json.snippet.title }}",
+              "type": "string"
+            },
+            {
+              "id": "1a12f868-5482-41ef-9ac7-b125a8d8e2de",
+              "name": "id_video",
+              "value": "={{ $json.id.videoId }}",
+              "type": "string"
+            },
+            {
+              "id": "fe75a212-35d2-4e49-89e2-2ec35c1b327e",
+              "name": "thumbnail",
+              "value": "={{ $json.snippet.thumbnails.high.url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        976,
+        1328
+      ],
+      "id": "3291e546-2731-438d-a39b-034dcc1bda30",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1200,
+        1328
+      ],
+      "id": "eec57af4-08f3-4d27-916b-4037bb17f2bf",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "content": "## Busca por filtro os videos do canal para aparecer no frontend\n",
+        "height": 284,
+        "width": 1436,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        16,
+        1248
+      ],
+      "typeVersion": 1,
+      "id": "687de858-93ad-46bd-8de4-797aa5432506",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b9090237-2a0d-4f98-82dd-6235aa2ff869",
+              "name": "id_canal",
+              "value": "={{ $json.body.id }}",
+              "type": "string"
+            },
+            {
+              "id": "b2fbdf7b-f80b-48b2-b564-80effb99ecc8",
+              "name": "apikey",
+              "value": "={{ $json.body.apikey }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        320,
+        1328
+      ],
+      "id": "5c0493a4-a639-4a6c-bb4f-1ce63120f47c",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/youtube/v3/commentThreads",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "part",
+              "value": "snippet"
+            },
+            {
+              "name": "videoId",
+              "value": "={{ $('Rede_social1').item.json.id_video }}"
+            },
+            {
+              "name": "key",
+              "value": "={{ $('Rede_social1').item.json.apiKey }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        672,
+        -64
+      ],
+      "id": "b67a7f9b-f171-489d-a1b3-50f8c820bba9",
+      "name": "Busca comentários no you tube"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "items",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        896,
+        -64
+      ],
+      "id": "c35456f7-fb96-45b6-b1cb-e780836a5aaf",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Split Out3').item.json.items.snippet.topLevelComment.snippet.textOriginal }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Analise os comentários e filtre as sugestões de melhorias. Que a saída seja apenas essas sugestões, se não houver não retorne nada."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1184,
+        336
+      ],
+      "id": "61d36db3-e593-471f-989a-367910bff219",
+      "name": "AI Agent3"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1152,
+        528
+      ],
+      "id": "c1893ef0-dbcc-4d36-8e1f-e90c9ae5b189",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "B4rycT9KgCdOLO94",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Split Out3').item.json.items.snippet.topLevelComment.id }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1280,
+        528
+      ],
+      "id": "5389b2dd-826e-4f39-b65b-f166b97e32e4",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"classificacao\": \"Mostrar a classificação, podendo ser positivo, neutro ou negativo\",\n  \"palavras-chave\": \"Coletar palavras específicas do texto que definem a classificação\",\n  \"tema\": \"Definir tema conforme o texto e a busca\",\n  \"rede_social\": \"YouTube\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        1472,
+        128
+      ],
+      "id": "7f760baa-77ae-4837-bfbf-03076a3cd468",
+      "name": "Structured Output Parser2"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"sugestão\": \"Mostrar a sugestão filtrada\",\n  \"tema\": \"Definir tema conforme o texto e a busca\",\n  \"rede_social\": \"YouTube\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        1392,
+        528
+      ],
+      "id": "6e92cbbe-b00d-4060-af04-a1dd169a291f",
+      "name": "Structured Output Parser3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3457c17e-2546-4675-a9eb-9894186f8fa7",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "{}",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1584,
+        336
+      ],
+      "id": "eecd1bde-425d-44a2-ac81-3bd52a08e3c0",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1f60cdfc-2994-4bf2-9c29-c335bb7d92cc",
+              "name": "rede_social",
+              "value": "YouTube Analytics",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        400,
+        912
+      ],
+      "id": "4d0cb9d7-bc9b-4842-83d7-eb426ae50551",
+      "name": "Rede_social3"
+    },
+    {
+      "parameters": {
+        "url": "=https://youtubeanalytics.googleapis.com/v2/reports?ids=channel==MINE&startDate={{ $('Webhook youtube analytics').item.json.body.data_inicio }}&endDate={{ $('Webhook youtube analytics').item.json.body.data_final }}&metrics=views,estimatedMinutesWatched&dimensions=day&sort=day",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "youTubeOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Webhook youtube analytics').item.json.body.apiKey }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        640,
+        912
+      ],
+      "id": "bccae84b-fc02-412b-ae53-ca8c96eec5fd",
+      "name": "Busca You tube Analytics",
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "czcmyeJBqEXyHRm1",
+          "name": "YouTube account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "buscar-youtube-analytics",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        144,
+        912
+      ],
+      "id": "dc0c49ec-7003-4be4-873c-1445b8106a7c",
+      "name": "Webhook youtube analytics",
+      "webhookId": "d693a473-851f-4558-9942-a502688289d5"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "buscar-youtube",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        192,
+        -64
+      ],
+      "id": "0b90eee3-3769-42bb-962f-62ab4fbe83b9",
+      "name": "Webhook you tube",
+      "webhookId": "d693a473-851f-4558-9942-a502688289d5"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        896,
+        912
+      ],
+      "id": "7f30c699-0226-4c7b-bb96-e848571f125a",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2128,
+        320
+      ],
+      "id": "2c2e2a88-7616-4ab2-8064-26cc5faa2247",
+      "name": "Respond to Webhook5"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "items",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        752,
+        1328
+      ],
+      "id": "43b8e528-74f2-4219-b9a2-80ce627164d0",
+      "name": "Split Out2"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/youtube/v3/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "={{ $('Edit Fields1').item.json.apikey }}"
+            },
+            {
+              "name": "channelId",
+              "value": "={{ $('Edit Fields1').item.json.id_canal }}"
+            },
+            {
+              "name": "part",
+              "value": "snippet"
+            },
+            {
+              "name": "order",
+              "value": "date"
+            },
+            {
+              "name": "maxResults",
+              "value": "50"
+            },
+            {
+              "name": "type",
+              "value": "video"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        544,
+        1328
+      ],
+      "id": "95149c38-aab2-4c57-a428-36b55ba7f8a9",
+      "name": "Buscar Videos"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "buscar-videos-youtube",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        96,
+        1328
+      ],
+      "id": "088b69a1-2d66-4e26-b5ad-22e88bf9dbb1",
+      "name": "Webhook YT Buscar Videos",
+      "webhookId": "47c526c0-8011-4017-998a-46e62e9e3fa5"
+    },
+    {
+      "parameters": {
+        "tableId": "sugestoes_postagens",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "sugestao",
+              "fieldValue": "={{ $json.output['sugestão'] }}"
+            },
+            {
+              "fieldId": "rede_social",
+              "fieldValue": "={{ $('Rede_social2').item.json.rede_social }}"
+            },
+            {
+              "fieldId": "data",
+              "fieldValue": "={{ $('Split Out3').item.json.items.snippet.topLevelComment.snippet.updatedAt }}"
+            },
+            {
+              "fieldId": "tema",
+              "fieldValue": "={{ $json.output.tema }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1872,
+        320
+      ],
+      "id": "0cbfe769-25d1-4644-b00f-66fd2bfa026f",
+      "name": "Create a row1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "999P97CJQzJBnWKj",
+          "name": "Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "sentinela",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "classificacao",
+              "fieldValue": "={{ $json.valor.classificacao }}"
+            },
+            {
+              "fieldId": "palavras_chaves",
+              "fieldValue": "={{ $json.valor['palavras-chave'] }}"
+            },
+            {
+              "fieldId": "tema",
+              "fieldValue": "={{ $json.valor.tema }}"
+            },
+            {
+              "fieldId": "rede_social",
+              "fieldValue": "={{ $('Rede_social1').item.json.rede_social }}"
+            },
+            {
+              "fieldId": "data_hora",
+              "fieldValue": "={{ $('Split Out').item.json.items.snippet.topLevelComment.snippet.updatedAt }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1856,
+        -64
+      ],
+      "id": "29a45bbe-1a27-47ef-9848-41edaf7bbfe9",
+      "name": "Create a row2",
+      "credentials": {
+        "supabaseApi": {
+          "id": "999P97CJQzJBnWKj",
+          "name": "Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2224,
+        -64
+      ],
+      "id": "aa4545bb-1be0-4882-8066-dc802268713e",
+      "name": "Respond to Webhook3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1f60cdfc-2994-4bf2-9c29-c335bb7d92cc",
+              "name": "rede_social",
+              "value": "YouTube",
+              "type": "string"
+            },
+            {
+              "id": "a4abdd42-7052-463c-a9d7-3d1643a40d9d",
+              "name": "apiKey",
+              "value": "={{ $json.body.apiKey }}",
+              "type": "string"
+            },
+            {
+              "id": "04c2c1c4-7a29-41f2-9cad-26981b53352d",
+              "name": "id_video",
+              "value": "={{ $json.body.id_video }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        336
+      ],
+      "id": "fb33beed-43cf-4078-bcbb-6e6b8c079444",
+      "name": "Rede_social2"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/youtube/v3/commentThreads",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "part",
+              "value": "snippet"
+            },
+            {
+              "name": "videoId",
+              "value": "={{ $('Rede_social2').item.json.id_video }}"
+            },
+            {
+              "name": "key",
+              "value": "={{ $('Rede_social2').item.json.apiKey }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        672,
+        336
+      ],
+      "id": "e566e1ea-0b1e-4e46-a105-0075489f0965",
+      "name": "Busca comentários no you tube1"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "items",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        912,
+        336
+      ],
+      "id": "9cca86bf-81af-4295-bcd5-180499c94358",
+      "name": "Split Out3"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "buscar-youtube-sugestoes",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        192,
+        336
+      ],
+      "id": "7566ab61-2979-4e57-9ca6-afd9576b95ed",
+      "name": "Webhook you tube1",
+      "webhookId": "d693a473-851f-4558-9942-a502688289d5"
+    },
+    {
+      "parameters": {
+        "content": "## Youtube",
+        "height": 1072,
+        "width": 2464,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        -288
+      ],
+      "typeVersion": 1,
+      "id": "dd937a3b-8ce3-429d-8325-6a56f398c7cd",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Analytics",
+        "height": 304,
+        "width": 1120,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        864
+      ],
+      "typeVersion": 1,
+      "id": "41787e97-077a-4dfc-8b41-34bf6c87d047",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3b05b562-85cb-4e1f-899d-6a10343bae8a",
+              "name": "autor_comentario",
+              "value": "={{ $('Split Out').item.json.items.snippet.topLevelComment.snippet.textOriginal }}",
+              "type": "string"
+            },
+            {
+              "id": "69a179a7-f481-419e-b85c-d1ea5f241fc8",
+              "name": "comentario",
+              "value": "={{ $('Split Out').item.json.items.snippet.topLevelComment.snippet.authorDisplayName }}",
+              "type": "string"
+            },
+            {
+              "id": "93768c19-6be4-40f5-ace8-8c1710ac7a02",
+              "name": "classificacao",
+              "value": "={{ $json.classificacao }}",
+              "type": "string"
+            },
+            {
+              "id": "d8df45d8-6244-49a2-b6c5-e21d1cb6347f",
+              "name": "palavras_chaves",
+              "value": "={{ $json.palavras_chaves }}",
+              "type": "string"
+            },
+            {
+              "id": "c3c95d42-4a22-43d4-a8d4-6c590709e7c5",
+              "name": "tema",
+              "value": "={{ $json.tema }}",
+              "type": "string"
+            },
+            {
+              "id": "2deee405-8477-43be-baa4-ca7eadc35864",
+              "name": "rede_social",
+              "value": "={{ $json.rede_social }}",
+              "type": "string"
+            },
+            {
+              "id": "9c7e421a-a43f-400c-8b40-1b763bd5a731",
+              "name": "data_hora",
+              "value": "={{ $json.data_hora }}",
+              "type": "string"
+            },
+            {
+              "id": "6782f907-d39e-4576-8965-b242d03d3f89",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2048,
+        -64
+      ],
+      "id": "7a6a478a-36b2-4bcf-858f-dea65a3d4c44",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        704,
+        1680
+      ],
+      "id": "38ecd986-e5d2-480f-81d4-9163c955b5a8",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "content": "## Exclui o histórico de analise do supabase\n",
+        "height": 260,
+        "width": 540,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        608,
+        1584
+      ],
+      "typeVersion": 1,
+      "id": "ee734d5b-a5e6-4174-b6a3-6f3e17ac05b0",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "tableId": "sentinela",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "data_hora",
+              "condition": "lt",
+              "keyValue": "={{ $now }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        928,
+        1680
+      ],
+      "id": "1f894664-e661-4d5d-afd4-68314c927b9c",
+      "name": "Exclui historico de analise",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "999P97CJQzJBnWKj",
+          "name": "Supabase"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        1312,
+        1680
+      ],
+      "id": "2f3f622a-a8d6-4e50-9053-7ab31859c667",
+      "name": "Schedule Trigger2"
+    },
+    {
+      "parameters": {
+        "content": "## Exclui o histórico de sugestões do supabase\n",
+        "height": 260,
+        "width": 540,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1216,
+        1584
+      ],
+      "typeVersion": 1,
+      "id": "bd21e1f8-bbd6-4282-839f-d5bb14de5208",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "tableId": "sugestoes_postagens",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "data",
+              "condition": "lt",
+              "keyValue": "={{ $now }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        1680
+      ],
+      "id": "fd8ebe7f-98fc-4550-b900-8b79b3dd5601",
+      "name": "Exclui historico de analise1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "999P97CJQzJBnWKj",
+          "name": "Supabase"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Schedule Trigger": [
+      {
+        "json": {
+          "timestamp": "2025-07-02T13:28:36.068-03:00",
+          "Readable date": "July 2nd 2025, 1:28:36 pm",
+          "Readable time": "1:28:36 pm",
+          "Day of week": "Wednesday",
+          "Year": "2025",
+          "Month": "July",
+          "Day of month": "02",
+          "Hour": "13",
+          "Minute": "28",
+          "Second": "36",
+          "Timezone": "America/Sao_Paulo (UTC-03:00)"
+        }
+      }
+    ],
+    "Webhook YT Buscar Videos": [
+      {
+        "json": {
+          "headers": {
+            "host": "api.teste.onlinecenter.com.br",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+            "content-length": "84",
+            "accept": "application/json",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+            "content-type": "application/json",
+            "origin": "https://0989be23-148e-441e-ab94-a1979004e9ed.lovableproject.com",
+            "priority": "u=1, i",
+            "referer": "https://0989be23-148e-441e-ab94-a1979004e9ed.lovableproject.com/",
+            "sec-ch-ua": "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\", \"Google Chrome\";v=\"138\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "x-forwarded-for": "143.202.224.42",
+            "x-forwarded-host": "api.teste.onlinecenter.com.br",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "fd2d6166e5b9",
+            "x-real-ip": "143.202.224.42"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "id": "UCZWNMLB1OygFh7q0BldHY_g",
+            "apikey": "AIzaSyA_tgLUgVMUeMg6kyQMDnrZgn-ELpaH0mE"
+          },
+          "webhookUrl": "https://api.teste.onlinecenter.com.br/webhook/buscar-videos-instagram",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "Webhook you tube1": [
+      {
+        "json": {
+          "headers": {
+            "host": "api.teste.onlinecenter.com.br",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+            "content-length": "52",
+            "accept": "application/json",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+            "content-type": "application/json",
+            "origin": "https://0989be23-148e-441e-ab94-a1979004e9ed.lovableproject.com",
+            "priority": "u=1, i",
+            "referer": "https://0989be23-148e-441e-ab94-a1979004e9ed.lovableproject.com/",
+            "sec-ch-ua": "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\", \"Google Chrome\";v=\"138\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "x-forwarded-for": "138.97.3.61",
+            "x-forwarded-host": "api.teste.onlinecenter.com.br",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "fd2d6166e5b9",
+            "x-real-ip": "138.97.3.61"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "apiKey": "AIzaSyA_tgLUgVMUeMg6kyQMDnrZgn-ELpaH0mE"
+          },
+          "webhookUrl": "https://api.teste.onlinecenter.com.br/webhook/buscar-youtube-sugestoes",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "Webhook youtube analytics": [
+      {
+        "json": {
+          "headers": {
+            "host": "api.teste.onlinecenter.com.br",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+            "content-length": "105",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+            "content-type": "application/json",
+            "origin": "https://0989be23-148e-441e-ab94-a1979004e9ed.lovableproject.com",
+            "priority": "u=1, i",
+            "referer": "https://0989be23-148e-441e-ab94-a1979004e9ed.lovableproject.com/",
+            "sec-ch-ua": "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\", \"Google Chrome\";v=\"138\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "x-forwarded-for": "138.97.3.61",
+            "x-forwarded-host": "api.teste.onlinecenter.com.br",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "fd2d6166e5b9",
+            "x-real-ip": "138.97.3.61"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "apiKey": "AIzaSyA_tgLUgVMUeMg6kyQMDnrZgn-ELpaH0mE",
+            "data_inicio": "2025-07-15",
+            "data_final": "2025-07-20"
+          },
+          "webhookUrl": "https://api.teste.onlinecenter.com.br/webhook/buscar-youtube-analytics",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "Webhook you tube": [
+      {
+        "json": {
+          "headers": {
+            "host": "api.teste.onlinecenter.com.br",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+            "content-length": "77",
+            "accept": "application/json",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+            "content-type": "application/json",
+            "origin": "https://0989be23-148e-441e-ab94-a1979004e9ed.lovableproject.com",
+            "priority": "u=1, i",
+            "referer": "https://0989be23-148e-441e-ab94-a1979004e9ed.lovableproject.com/",
+            "sec-ch-ua": "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\", \"Google Chrome\";v=\"138\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "x-forwarded-for": "45.70.147.2",
+            "x-forwarded-host": "api.teste.onlinecenter.com.br",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "fd2d6166e5b9",
+            "x-real-ip": "45.70.147.2"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "apiKey": "AIzaSyA_tgLUgVMUeMg6kyQMDnrZgn-ELpaH0mE",
+            "id_video": "4LYEtCmkodE"
+          },
+          "webhookUrl": "https://api.teste.onlinecenter.com.br/webhook/buscar-youtube",
+          "executionMode": "production"
+        }
+      }
+    ],
+    "Schedule Trigger1": [
+      {
+        "json": {
+          "timestamp": "2025-07-02T13:28:36.068-03:00",
+          "Readable date": "July 2nd 2025, 1:28:36 pm",
+          "Readable time": "1:28:36 pm",
+          "Day of week": "Wednesday",
+          "Year": "2025",
+          "Month": "July",
+          "Day of month": "02",
+          "Hour": "13",
+          "Minute": "28",
+          "Second": "36",
+          "Timezone": "America/Sao_Paulo (UTC-03:00)"
+        }
+      }
+    ],
+    "Schedule Trigger2": [
+      {
+        "json": {
+          "timestamp": "2025-07-02T13:28:36.068-03:00",
+          "Readable date": "July 2nd 2025, 1:28:36 pm",
+          "Readable time": "1:28:36 pm",
+          "Day of week": "Wednesday",
+          "Year": "2025",
+          "Month": "July",
+          "Day of month": "02",
+          "Hour": "13",
+          "Minute": "28",
+          "Second": "36",
+          "Timezone": "America/Sao_Paulo (UTC-03:00)"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Create a row2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Exclui historico de mensagens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rede_social1": {
+      "main": [
+        [
+          {
+            "node": "Busca comentários no you tube",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Buscar Videos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca comentários no you tube": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent3": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser3": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Create a row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rede_social3": {
+      "main": [
+        [
+          {
+            "node": "Busca You tube Analytics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca You tube Analytics": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook youtube analytics": {
+      "main": [
+        [
+          {
+            "node": "Rede_social3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook you tube": {
+      "main": [
+        [
+          {
+            "node": "Rede_social1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Videos": {
+      "main": [
+        [
+          {
+            "node": "Split Out2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook YT Buscar Videos": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook5": {
+      "main": [
+        []
+      ]
+    },
+    "Respond to Webhook3": {
+      "main": [
+        []
+      ]
+    },
+    "Rede_social2": {
+      "main": [
+        [
+          {
+            "node": "Busca comentários no you tube1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca comentários no you tube1": {
+      "main": [
+        [
+          {
+            "node": "Split Out3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook you tube1": {
+      "main": [
+        [
+          {
+            "node": "Rede_social2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out3": {
+      "main": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Exclui historico de analise",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger2": {
+      "main": [
+        [
+          {
+            "node": "Exclui historico de analise1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c5cc6864-6a2d-4900-ab03-bc0e01f5df60",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9aab45911b97299333480ee93b3a756a301732a8d3c5c2882e1becb4b9fe223a"
+  },
+  "id": "Daz0l2ltJaMyttTV",
+  "tags": [
+    {
+      "createdAt": "2025-06-25T12:22:35.387Z",
+      "updatedAt": "2025-06-25T12:22:35.387Z",
+      "id": "5DZgAGqUyVHhsDkC",
+      "name": "SUPABASE"
+    },
+    {
+      "createdAt": "2025-07-14T16:42:45.449Z",
+      "updatedAt": "2025-07-14T16:42:45.449Z",
+      "id": "jtIsE61bpcF0lUNd",
+      "name": "YOUTUBE"
+    }
+  ]
+}
