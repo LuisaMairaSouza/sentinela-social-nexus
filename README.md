@@ -1,73 +1,121 @@
-# Bem-vindo ao seu projeto Lovable
+# YouTube Analytics Dashboard
 
-## Informações do projeto
+## 📝 Descrição do Projeto
 
-**URL**: https://lovable.dev/projects/0989be23-148e-441e-ab94-a1979004e9ed
+Uma aplicação web moderna para análise de comentários e métricas de vídeos do YouTube. A ferramenta permite monitorar sentimentos, extrair insights e gerar sugestões para melhorar o engajamento baseado nos comentários dos vídeos.
 
-## Como posso editar este código?
+## ✨ Funcionalidades Principais
 
-Existem várias maneiras de editar sua aplicação.
+### 🎯 Análise de Comentários
+- **Classificação de Sentimentos**: Análise automática de comentários em positivos, negativos e neutros
+- **Extração de Palavras-chave**: Identificação automática de temas relevantes
+- **Análise de Temas**: Categorização de comentários por assuntos
+- **Sugestões de Melhoria**: Geração de recomendações baseadas no feedback dos usuários
 
-**Use o Lovable**
+### 📊 Visualização de Dados
+- **Gráficos Interativos**: Pie chart e bar chart para visualizar distribuição de sentimentos
+- **Analytics do Canal**: Gráficos de views e tempo assistido ao longo do tempo
+- **Filtros por Sentimento**: Visualização específica por tipo de classificação
 
-Simplesmente visite o [Projeto Lovable](https://lovable.dev/projects/0989be23-148e-441e-ab94-a1979004e9ed) e comece a dar comandos.
+### 🔧 Gestão de Canais
+- **Múltiplos Canais**: Cadastre e gerencie vários canais do YouTube
+- **Armazenamento Local**: Suas configurações são salvas automaticamente
+- **Troca Rápida**: Alterne entre canais facilmente
 
-Mudanças feitas via Lovable serão commitadas automaticamente neste repositório.
+### 🎨 Interface Moderna
+- **Dark/Light Mode**: Tema claro e escuro
+- **Design Responsivo**: Funciona em desktop e mobile
+- **Interface Intuitiva**: Design limpo e fácil de usar
 
-**Use seu IDE preferido**
+## 🚀 Como Usar
 
-Se você quiser trabalhar localmente usando seu próprio IDE, você pode clonar este repositório e fazer push das mudanças. Mudanças enviadas também serão refletidas no Lovable.
+### 1. Configuração Inicial
+1. Cadastre um novo canal fornecendo:
+   - Nome do canal
+   - API Key do YouTube
+   - ID do canal
 
-O único requisito é ter Node.js & npm instalados - [instale com nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### 2. Analisando Vídeos
+1. Selecione um canal cadastrado
+2. Busque os vídeos do canal
+3. Clique em um vídeo para analisar seus comentários
+4. Visualize os dados nos gráficos interativos
 
-Siga estes passos:
+### 3. Obtendo Sugestões
+1. Após analisar um vídeo, clique em "Buscar Sugestões"
+2. Visualize as recomendações geradas pela IA
+3. Use os insights para melhorar seu conteúdo
 
-```sh
-# Passo 1: Clone o repositório usando a URL Git do projeto.
-git clone <SUA_URL_GIT>
+## 🛠️ Tecnologias Utilizadas
 
-# Passo 2: Navegue para o diretório do projeto.
-cd <NOME_DO_SEU_PROJETO>
+- **Frontend**: React 18 com TypeScript
+- **Styling**: Tailwind CSS + shadcn/ui
+- **Build Tool**: Vite
+- **Charts**: Recharts
+- **Icons**: Lucide React
+- **Tema**: next-themes
+- **Routing**: React Router DOM
 
-# Passo 3: Instale as dependências necessárias.
-npm i
+## 📋 Pré-requisitos
 
-# Passo 4: Inicie o servidor de desenvolvimento com auto-recarregamento e preview instantâneo.
+- API Key do YouTube Data API v3
+- ID do canal do YouTube que você deseja analisar
+
+### Como obter uma API Key do YouTube:
+1. Acesse o [Google Cloud Console](https://console.cloud.google.com/)
+2. Crie um novo projeto ou selecione um existente
+3. Ative a YouTube Data API v3
+4. Crie credenciais (API Key)
+5. Configure as restrições de API conforme necessário
+
+## 🚀 Instalação e Desenvolvimento
+
+```bash
+# Clone o repositório
+git clone <URL_DO_REPOSITORIO>
+
+# Navegue para o diretório
+cd youtube-analytics-dashboard
+
+# Instale as dependências
+npm install
+
+# Inicie o servidor de desenvolvimento
 npm run dev
 ```
 
-**Edite um arquivo diretamente no GitHub**
+## 📁 Estrutura do Projeto
 
-- Navegue para o(s) arquivo(s) desejado(s).
-- Clique no botão "Edit" (ícone de lápis) no canto superior direito da visualização do arquivo.
-- Faça suas mudanças e faça commit das alterações.
+```
+src/
+├── components/ui/     # Componentes da interface
+├── hooks/            # Custom hooks
+├── lib/              # Utilitários
+├── pages/            # Páginas da aplicação
+│   └── Index.tsx     # Página principal
+└── main.tsx          # Ponto de entrada
+```
 
-**Use GitHub Codespaces**
+## 🔗 API Endpoints
 
-- Navegue para a página principal do seu repositório.
-- Clique no botão "Code" (botão verde) próximo ao canto superior direito.
-- Selecione a aba "Codespaces".
-- Clique em "New codespace" para iniciar um novo ambiente Codespace.
-- Edite arquivos diretamente dentro do Codespace e faça commit e push das suas mudanças quando terminar.
+O projeto se integra com uma API externa para processamento dos dados:
 
-## Quais tecnologias são usadas neste projeto?
+- **Buscar Vídeos**: `POST /webhook/buscar-videos-youtube`
+- **Analisar Comentários**: `POST /webhook/buscar-youtube`
+- **Gerar Sugestões**: `POST /webhook/buscar-youtube-sugestoes`
 
-Este projeto é construído com:
+## 🤝 Como Contribuir
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/MinhaFeature`)
+3. Commit suas mudanças (`git commit -m 'Adiciona MinhaFeature'`)
+4. Push para a branch (`git push origin feature/MinhaFeature`)
+5. Abra um Pull Request
 
-## Como posso fazer o deploy deste projeto?
+## 📄 Licença
 
-Simplesmente abra [Lovable](https://lovable.dev/projects/0989be23-148e-441e-ab94-a1979004e9ed) e clique em Share -> Publish.
+Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.
 
-## Posso conectar um domínio personalizado ao meu projeto Lovable?
+## 📞 Suporte
 
-Sim, você pode!
-
-Para conectar um domínio, navegue para Project > Settings > Domains e clique em Connect Domain.
-
-Leia mais aqui: [Configurando um domínio personalizado](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Para suporte, entre em contato através do [Lovable](https://lovable.dev/projects/0989be23-148e-441e-ab94-a1979004e9ed) ou abra uma issue no repositório.
